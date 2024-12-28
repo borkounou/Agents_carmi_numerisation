@@ -1,0 +1,69 @@
+{%extends "base.html"%}
+
+{% block head_title%}Users{%endblock%}
+
+
+{%block content%}
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Dossiers des agents</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active">Touts les dossiers numerisés des agents de Carmi </li>
+            </ol>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                     Table des agents
+                </div>
+                <div class="card-body">
+                    <table id="datatablesSimple">
+                        <thead>
+                            <tr>
+                            {%for column in data["columns"]%}
+                                <th>{{column}}</th>
+                            {% endfor %}
+                            <th>action</th>
+                            </tr>
+                            
+                        </thead>
+                        <tfoot>
+                            <tr id="tableFoot">
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {%for row in data["rows"]%}
+                                <tr>
+                                    {%for cell in row%}
+                                        <td>{{cell}}</td>
+                    
+                                    {% endfor %}
+                                    <td style="text-align: center; width: 100px;">
+                                        <button class="btn btn-danger btn-sm table-action-btn delete-user-btn" data-user-id="{{ row[0] }}">
+                                            Delete
+                                        </button>
+                                    </td> 
+                                </tr>
+
+                               
+
+                           
+                                    
+                     
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {%include "footer.html"%}
+
+</div>
+
+{%endblock%}
+
+
+

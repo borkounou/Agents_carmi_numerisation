@@ -1,0 +1,9 @@
+<button class="btn btn-danger btn-sm table-action-btn delete-user-btn" data-user-id="{{ row[0] }}" onclick="openDeleteModal({{ row[0] }})">
+    Supprimer
+</button>
+<button class="btn btn-primary btn-sm table-action-btn" data-user-id="{{ row[0] }}" onclick="openEditModal({{ row[0] }})">
+    Modifier
+</button>
+<button class="btn btn-info btn-sm table-action-btn" data-pdf-path="{{ row[8] }}" onclick="openViewModal('{{ row[8] }}')">
+    Voir
+</button>

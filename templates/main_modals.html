@@ -1,0 +1,123 @@
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editAgentModal" tabindex="-1" aria-labelledby="editAgentModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editAgentModalLabel">Modifier l'agent</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editAgentForm">
+                            <input type="hidden" id="editAgentId" name="id">
+                            <div class="mb-3">
+                                <label for="editNNI" class="form-label">NNI</label>
+                                <input type="text" class="form-control" id="editNNI" name="nni" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editFullname" class="form-label">Nom Complet</label>
+                                <input type="text" class="form-control" id="editFullname" name="fullname" required>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="editTitleNumber" class="form-label">Numero de Titre</label>
+                                <input type="text" class="form-control" id="editTitleNumber" name="title_number" required>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="editDateOfBirth" class="form-label">Date de Naissance</label>
+                                <input type="date" class="form-control" id="editDateOfBirth" name="date_of_birth" required>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="editBirthPlace" class="form-label">Lieu de Naissance</label>
+                                <input type="text" class="form-control" id="editBirthPlace" name="birth_place" required>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="editCategory" class="form-label">Catégorie</label>
+                                <input type="text" class="form-control" id="editCategory" name="category" required>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="editPhone" class="form-label">Telephone</label>
+                                <input type="text" class="form-control" id="editPhone" name="telephone" required>
+                            </div>
+                            <!-- Add other fields as needed -->
+                            <button type="submit" class="btn btn-primary">Sauvegarder les changements</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteAgentModal" tabindex="-1" aria-labelledby="deleteAgentModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteAgentModalLabel">Confirmer la suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Êtes-vous sûr de vouloir supprimer cet agent ? Cette action est irréversible.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-danger" id="confirmDeleteButton">Supprimer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Agent Details Modal -->
+        <div class="modal fade" id="agentModal" tabindex="-1" aria-labelledby="agentModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="agentModalLabel">Détails de l'agent</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="agentDetails">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <strong>Nom Complet:</strong> <span id="agentFullName"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Numéro de Titre:</strong> <span id="agentTitleNumber"></span>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <strong>NNI:</strong> <span id="agentNNI"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Date de Naissance:</strong> <span id="agentDateOfBirth"></span>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <strong>Catégorie:</strong> <span id="agentCategory"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Lieu de Naissance:</strong> <span id="agentBirthPlace"></span>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <strong>Téléphone:</strong> <span id="agentPhone"></span>
+                                </div>
+                            </div>
+                            <hr>
+                            <h5>Document PDF:</h5>
+                            <iframe id="agentPDF" src="" style="width: 100%; height: 600px;" frameborder="0"></iframe>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
