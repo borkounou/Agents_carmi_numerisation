@@ -429,7 +429,7 @@ def password(request: Request):
 
 
 @router.get("/register", response_class=HTMLResponse)
-def register(request: Request,auth:str=Depends(verify_session)):
+def register(request: Request):
     return templates.TemplateResponse("register.html", {"request": request, "body_class": "bg-primary"})
 
 
