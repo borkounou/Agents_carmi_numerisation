@@ -12,6 +12,7 @@ class AgentBase(BaseModel):
     birth_place:str
     telephone:str
     address:str
+    profile_path:Optional[str] = "profiles/profile_default.png"
     document_path:str
     class Config:
         from_attributes = True
@@ -30,7 +31,9 @@ class AgentResponse(BaseModel):
     birth_place:str
     telephone:str
     address:str
+    profile_path:Optional[str] = "profiles/profile_default.png"
     document_path:str
+    
 
 
 class Agent(AgentCreate):

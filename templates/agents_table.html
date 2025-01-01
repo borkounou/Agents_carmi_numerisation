@@ -34,9 +34,18 @@
                         </tfoot>
                         <tbody>
                             {%for row in data["rows"]%}
-                                <tr data-toggle="modal" data-target="#agentModal" onclick="openAgentModal({{ row[0] }})">
+                                <tr data-toggle="modal"  style="cursor: pointer;">
                                     {%for cell in row%}
-                                        <td>{{cell}}</td>
+
+                                        <td>
+                                            {%if loop.index == 1%}
+                                        <a href="/admin/detail-agent/{{ row[0] }}" class="text-primary" style="text-decoration:none; cursor: pointer;">
+                                            {{cell}}
+                                        </a>
+                                        {%else%}
+                                        {{cell}}
+                                        {% endif %}
+                                        </td>
                     
                                     {% endfor %}
                                     <td style="text-align: center; width: 100px;" {% if role != 'admin' %} style="display:none;" {% endif %}>

@@ -33,7 +33,8 @@ class Agent(Base):
     birth_place = Column(String, nullable=False)
     category = Column(String, default="Agent Militaire")
     address = Column(String, default="")
-    document_path = Column(String, nullable=True)  
+    document_path = Column(String, nullable=False)  
+    profile_path= Column(String, default="profiles/profile_default.png", nullable=True)
     telephone = Column(String, default="0000000000", nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'))
 

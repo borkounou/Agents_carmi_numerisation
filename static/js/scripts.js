@@ -204,6 +204,12 @@ window.addEventListener('DOMContentLoaded', event => {
     
 
 
+    document.addEventListener('DOMContentLoaded', function () {
+        function navigateToAgentDetails(agentId) {
+            window.location.href = `/admin/detail-agent/${agentId}`;
+        }
+        window.navigateToAgentDetails = navigateToAgentDetails; // Expose globally if needed
+    });
 
         // Function to open the modal and populate agent details
         function openAgentModal(agentId) {
@@ -225,34 +231,24 @@ window.addEventListener('DOMContentLoaded', event => {
                     console.error('Error fetching agent data:', error);
                 });
         }
-// async function loadTable(){
-//     const response = await fetch("/table-data");
-//     const data = await response.json();
-//     const tableHead = document.getElementById('tableHead');
-//     data.columns.forEach(col=>{
-//         const th=document.createElement('th');
-//         th.textContent=col;
-//         tableHead.appendChild(th);
-//     });
-
-//     const tableBody = document.getElementById('tableBody');
-//     data.rows.forEach(row=>{
-//         const tr = document.createElement('tr');
-//         row.forEach(cell=>{
-//             const td = document.createElement('td');
-//             td.textContent=cell;
-//             tr.appendChild(td);
-//         });
-//         tableBody.appendChild(tr);
-//     });
-
-// }
-
-// loadTable();
 
 
 
 
 
-
-
+document.addEventListener('DOMContentLoaded', function () {
+    function navAgentDetails(row) {
+        // Extract the user ID from the data attribute
+        const userId = row.getAttribute('data-user-id');
+    
+        if (userId) {
+            // Navigate to the details page
+            window.location.href = `/admin/detail-agent/${userId}`;
+        } else {
+            console.error("User ID not found on the row.");
+        }
+    }
+            window.navAgentDetails = navAgentDetails; // Expose globally if needed
+        });
+    
+        // JavaScript function to navigate to agent details
