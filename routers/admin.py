@@ -162,18 +162,17 @@ def create_user(request:Request,
                 password:str = Form(...),
                 gender:str = Form(...),
                 db:Session = Depends(get_db),
-                auth:str=Depends(verify_session)):
-    # usernames= request.cookies.get("username")
+                # auth:str=Depends(verify_session)
+                ):
+
     
     try:
          
-        # if not usernames:
-        #     raise HTTPException(status_code=403, detail="Access forbidden: Missing credentials.")
 
-        admin_user = db.query(models.User).filter(models.User.email== auth).first()
-    # Check if the user exists and if their role is 'admin'
-        if not admin_user or admin_user.role != 'admin':
-            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    #     admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # # Check if the user exists and if their role is 'admin'
+    #     if not admin_user or admin_user.role != 'admin':
+    #         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
         hashed_pw = hash_password(password)
         new_user = models.User(
             first_name=first_name,
