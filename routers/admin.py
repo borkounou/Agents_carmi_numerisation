@@ -71,10 +71,12 @@ def logout():
     return response
 
 @router.get('/admin', response_class=HTMLResponse)
-def index(request:Request,db:Session = Depends(get_db), auth:str=Depends(verify_session)):
+def index(request:Request,db:Session = Depends(get_db), 
+          auth:str=Depends(verify_session)
+          ):
     try:
 
-        # users = db.query(models.User).all()
+
         user = db.query(models.User).filter(models.User.email == auth).first()
         if not user:
             raise HTTPException(status_code=401, detail="User not found")

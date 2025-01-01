@@ -12,6 +12,7 @@ DB_HOST= os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
 uri = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_BASE}"
+
 engine = create_engine(uri)
 Base.metadata.create_all(bind=engine)
 
