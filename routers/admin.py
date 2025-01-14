@@ -33,11 +33,6 @@ UPLOAD_PROFILE ="profiles"
 os.makedirs(UPLOAD_PROFILE, exist_ok=True)
 
 
-def check_admin(request: Request, db: Session) -> models.User:
-    username = request.cookies.get("username")
-    if not username:
-        raise HTTPException(status_code=403, detail="Access forbidden: Missing credentials")
-
 
 @router.get("/")
 def root():
@@ -51,7 +46,7 @@ def login(request: Request):
 def login_user(request: Request, email:str=Form(...), password:str=Form(...), db:Session=Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == email).first()
     if not user or not pwd_context.verify(password, user.hashed_password):
-        return templates.TemplateResponse("login.html", {"request": request, "body_class": "bg-primary", "error": "Invalid username or password"})
+        return templates.TemplateResponse("login.html", {"request": request, "body_class": "bg-primary", "error": "Mot de passe ou addresse email invalide"})
     
     session_token = create_session_token(
         username=email,
@@ -92,21 +87,16 @@ def index(request:Request,db:Session = Depends(get_db),
         return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role})
     except SQLAlchemyError as e:
     
-        raise HTTPException(status_code=500, detail="A database error occurred.")
+        raise HTTPException(status_code=500, detail="Une erreur produite dans la base des données.")
     
     except Exception as e:
-                # Log unexpected errors
-        print(f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Quelque chose ne va pas! Ressayer encore!! .")
-    
+        raise HTTPException(status_code=500, detail=f"Quelque chose ne va pas! Ressayer encore!! ou {str(e)}")
 
 
 @router.get("/admin/users-table", response_class=HTMLResponse)
-async def users_table(request: Request,db: Session = Depends(get_db),username:str=Depends(verify_session)):
-    username = request.cookies.get("username")
-
+async def users_table(request: Request,db: Session = Depends(get_db),auth:str=Depends(verify_session)):
     # Fetch the user from the database based on the username
-    user = db.query(models.User).filter(models.User.email == username).first()
+    user = db.query(models.User).filter(models.User.email == auth).first()
     
     # Check if the user exists and if their role is 'admin'
     if not user or user.role != 'admin':
@@ -122,11 +112,10 @@ async def users_table(request: Request,db: Session = Depends(get_db),username:st
 
 
 
-
 @router.get("/admin/agents-table", response_class=HTMLResponse)
-async def agents_table(request: Request,db: Session = Depends(get_db),username:str=Depends(verify_session)):
+async def agents_table(request: Request,db: Session = Depends(get_db),auth:str=Depends(verify_session)):
 
-    user = db.query(models.User).filter(models.User.email == username).first()
+    user = db.query(models.User).filter(models.User.email == auth).first()
     # Check if the user exists and if their role is 'admin'
     if not user or user.role != 'admin':
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
@@ -152,9 +141,13 @@ async def agents_table(request: Request,db: Session = Depends(get_db),username:s
 
 
 
-
-
-
+@router.get("/admin/register-user", response_class=HTMLResponse)
+def register(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user or admin_user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+    return templates.TemplateResponse("register.html", {"request": request, "body_class": "bg-light"})
 @router.post('/admin/create-user', status_code=status.HTTP_201_CREATED, response_model=List[schemas.UserResponse])
 def create_user(request:Request,
                 first_name:str = Form(...),
@@ -164,17 +157,16 @@ def create_user(request:Request,
                 password:str = Form(...),
                 gender:str = Form(...),
                 db:Session = Depends(get_db),
-                # auth:str=Depends(verify_session)
+                auth:str=Depends(verify_session)
                 ):
 
     
     try:
-         
-
-    #     admin_user = db.query(models.User).filter(models.User.email== auth).first()
-    # # Check if the user exists and if their role is 'admin'
-    #     if not admin_user or admin_user.role != 'admin':
-    #         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+        
+        admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+        if not admin_user or admin_user.role != 'admin':
+            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement. vous n'avez pas droit de creer un utilisateur")
         hashed_pw = hash_password(password)
         new_user = models.User(
             first_name=first_name,
@@ -230,15 +222,10 @@ async def create_agent(request:Request,
                  db:Session=Depends(get_db),
                  auth:str=Depends(verify_session)):
     
-    # username = request.cookies.get("username")
-
-    # if not username:
-    #     raise HTTPException(status_code=403, detail="Access forbidden: Missing credentials.")
-    
-
     admin_user = db.query(models.User).filter(models.User.email == auth).first()
     # Check if the user exists and if their role is 'admin'
-    if not admin_user or admin_user.role != 'admin':
+    # if not admin_user or admin_user.role != 'admin':
+    if not admin_user:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
 
     form_data = await request.form()
@@ -275,7 +262,7 @@ async def create_agent(request:Request,
         db.refresh(new_agent)
         return templates.TemplateResponse(
             "create_agent.html",
-            {"request": request, "success_message": "Agent created successfully!"}
+            {"request": request, "success_message": f"Vous avez créer avec succés l'agent de NNI: {nni}!"}
         )
     
     except IntegrityError as e:
@@ -294,40 +281,33 @@ async def create_agent(request:Request,
 
 @router.delete("/admin/delete-agent/{agent_id}")
 async def delete_agent(request:Request,agent_id: int, db: Session = Depends(get_db),auth:str=Depends(verify_session)):
-    agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
-    username = request.cookies.get("username")
 
-    if not username:
-        raise HTTPException(status_code=403, detail="Access forbidden: Missing credentials.")
 
-    admin_user = db.query(models.User).filter(models.User.username == username).first()
+    admin_user = db.query(models.User).filter(models.User.email == auth).first()
     # Check if the user exists and if their role is 'admin'
     if not admin_user or admin_user.role != 'admin':
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
     if not agent:
-        raise HTTPException(status_code=404, detail="Agent not found.")
+        raise HTTPException(status_code=404, detail="Cet agent n'existe pas.")
     db.delete(agent)
     db.commit()
-    return {"message": "Agent deleted successfully."}
+    return {"message": "Suppression de l'agent avec succés."}
 
 
-@router.delete("/admin/delete-user/{username}", status_code=status.HTTP_200_OK)
-def delete_user(request:Request, username:int, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
-    user = db.query(models.User).filter(models.User.username==username).first()
-    username = request.cookies.get("username")
+@router.delete("/admin/delete-user/{user_id}", status_code=status.HTTP_200_OK)
+def delete_user(request:Request, user_id:int, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
 
-    if not username:
-        raise HTTPException(status_code=403, detail="Access forbidden: Missing credentials.")
-
-    admin_user = db.query(models.User).filter(models.User.username == username).first()
+    admin_user = db.query(models.User).filter(models.User.email == auth).first()
     # Check if the user exists and if their role is 'admin'
     if not admin_user or admin_user.role != 'admin':
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    user = db.query(models.User).filter(models.User.id==user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     db.delete(user)
     db.commit()
-    return {"detail": f"User {username} deleted successfully"}
+    return {"detail": f"User {user.username} deleted successfully"}
 
 
 
@@ -339,13 +319,12 @@ def delete_user(request:Request, username:int, db:Session = Depends(get_db),auth
 async def get_agent(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str=Depends(verify_session)):
     # Fetch the user from the database based on the username
     user = db.query(models.User).filter(models.User.email == auth).first()
-    
     # Check if the user exists and if their role is 'admin'
     if not user or user.role != 'admin':
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
     agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
     if not agent:
-        raise HTTPException(status_code=404, detail="Agent not found.")
+        raise HTTPException(status_code=404, detail="Agent introuvable.")
     return {
         "id": agent.id,
         "nni": agent.nni,
@@ -403,11 +382,10 @@ async def edit_agent(request:Request,agent_id: int, updated_data: dict, db: Sess
     try:
         
         admin_user = db.query(models.User).filter(models.User.email == auth).first()
-        agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
-    
     
         if not admin_user or admin_user.role != 'admin':
             raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+        agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
         if not agent:
             raise HTTPException(status_code=404, detail="Agent inexistant.")
         
@@ -429,13 +407,15 @@ def password(request: Request):
     return templates.TemplateResponse("password.html", {"request": request, "body_class": "bg-primary"})
 
 
-@router.get("/register", response_class=HTMLResponse)
-def register(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request, "body_class": "bg-primary"})
 
 
-@router.get("/register-agent", response_class=HTMLResponse)
-def register_agent(request: Request,auth:str=Depends(verify_session)):
+
+@router.get("/admin/register-agent", response_class=HTMLResponse)
+def register_agent(request: Request, db: Session = Depends(get_db),auth:str=Depends(verify_session)):
+    user = db.query(models.User).filter(models.User.email == auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
     return templates.TemplateResponse("create_agent.html",{"request":request, "body_class": "sb-nav-fixed"})
 
 

@@ -4,43 +4,28 @@ Chart.defaults.global.defaultFontColor = '#292b2c';
 
 // Bar Chart Example
 var ctx = document.getElementById("myBarChart");
+
 var myLineChart = new Chart(ctx, {
   type: 'bar',
   data: {
-    labels: ["January", "February", "March", "April", "May", "June"],
+    labels: ["Agent Militaire", "Agent Militaire Veuve", "Agent Garde"],
     datasets: [{
-      label: "Revenue",
-      backgroundColor: "rgba(2,117,216,1)",
+      label: "Compensation",
+      backgroundColor: ["rgba(2,117,216,1)", "rgba(92,184,92,1)", "rgba(240,173,78,1)"],
       borderColor: "rgba(2,117,216,1)",
-      data: [4215, 5312, 6251, 7841, 9821, 14984],
+      data: [120000, 80000, 60000],
     }],
   },
   options: {
-    scales: {
-      xAxes: [{
-        time: {
-          unit: 'month'
-        },
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          maxTicksLimit: 6
-        }
-      }],
-      yAxes: [{
-        ticks: {
-          min: 0,
-          max: 15000,
-          maxTicksLimit: 5
-        },
-        gridLines: {
-          display: true
-        }
-      }],
-    },
     legend: {
       display: false
-    }
-  }
+    },
+    scales: {
+      yAxes: [{
+        ticks: {
+          beginAtZero: true, // Ensures the y-axis starts from 0
+        },
+      }],
+    },
+  },
 });

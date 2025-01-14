@@ -70,7 +70,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">
-                                    <input class="form-control" id="inputTelephone" type="text" placeholder="Entrer votre telephone" name="telephone" />
+                                    <input class="form-control" id="inputTelephone" type="text" placeholder="Entrer votre telephone" value="0000000000" name="telephone" required/>
                                     <label for="inputTelephone">Téléphone</label>
                                 </div>
                             </div>
@@ -81,13 +81,17 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">
-                                    <input class="form-control" id="inputCategory" type="text" placeholder=" Catégorie" name="category" required />
+                                    <select class="form-control" id="inputCategory" name="category" required>
+                                        <option value="Agent Militaire">Agent Militaire</option>
+                                        <option value="Agent Militaire Veuve">Agent Veuve</option>
+                                        <option value="Agent Garde">Agent Garde</option>
+                                    </select>
                                     <label for="inputCategory">Catégorie</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">
-                                    <input class="form-control" id="inputAddress" type="text" placeholder="Entrer votre lieu de residence" name="address" />
+                                    <input class="form-control" id="inputAddress" type="text" placeholder="Entrer votre lieu de residence" name="address" value="Ndjamena Tchad" required/>
                                     <label for="inputAddress">Addresse de Residence</label>
                                 </div>
                             </div>

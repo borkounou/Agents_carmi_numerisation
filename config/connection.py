@@ -12,7 +12,7 @@ DB_HOST= os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
 uri = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_BASE}"
-
+uri = "postgresql+psycopg2://postgres:Borkounou%40123@192.168.1.32:5432/mahrasoft"
 engine = create_engine(uri)
 Base.metadata.create_all(bind=engine)
 
@@ -31,7 +31,7 @@ def get_db():
 try: 
     connection = engine.connect()
     connection.close()
-    print("connection closed")
+    print("connection successfully established")
 
 except Exception as e:
     print("Error connecting to database")

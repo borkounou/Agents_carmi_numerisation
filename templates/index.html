@@ -55,7 +55,7 @@
                     <div class="card mb-4">
                         <div class="card-header">
                             <i class="fas fa-chart-area me-1"></i>
-                            Area Chart Example
+                            Dossiers numerisés par Catégorie
                         </div>
                         <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
                     </div>
@@ -64,7 +64,7 @@
                     <div class="card mb-4">
                         <div class="card-header">
                             <i class="fas fa-chart-bar me-1"></i>
-                            Bar Chart Example
+                        Dossiers numerisés par Catégorie
                         </div>
                         <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
                     </div>
@@ -72,8 +72,13 @@
             </div>
             <div class="card mb-4">
                 <div class="card-header">
+                    
                     <i class="fas fa-table me-1"></i>
                     Table des agents de la CARMI
+                    <div class="d-flex align-items-center justify-content-end">
+                        <a class="btn btn-success btn-sm table-action-btn" href="{{https_url_for(request,'register_agent')}}"> Ajouter un agent</a>
+                    </div>
+                    
                 </div>
                 <div class="card-body">
                     <table id="datatablesSimple">
