@@ -97,7 +97,7 @@ def index(request:Request,db:Session = Depends(get_db),
 async def users_table(request: Request,db: Session = Depends(get_db),auth:str=Depends(verify_session)):
     # Fetch the user from the database based on the username
     user = db.query(models.User).filter(models.User.email == auth).first()
-    
+    role = user.role
     # Check if the user exists and if their role is 'admin'
     if not user or user.role != 'admin':
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
@@ -108,7 +108,7 @@ async def users_table(request: Request,db: Session = Depends(get_db),auth:str=De
         "rows": [[user.id, user.first_name, user.last_name, user.username, user.email,user.gender,user.role] for user in users]
     }
 
-    return templates.TemplateResponse("users_table.html", {"request": request, "body_class": "sb-nav-fixed", "data":data})
+    return templates.TemplateResponse("users_table.html", {"request": request, "body_class": "sb-nav-fixed", "data":data,"role":role,"username":user.username,})
 
 
 
@@ -416,7 +416,7 @@ def register_agent(request: Request, db: Session = Depends(get_db),auth:str=Depe
     # Check if the user exists and if their role is 'admin'
     if not user:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
-    return templates.TemplateResponse("create_agent.html",{"request":request, "body_class": "sb-nav-fixed"})
+    return templates.TemplateResponse("create_agent.html",{"request":request, "body_class": "sb-nav-fixed", "role": user.role, "username": user.username})
 
 
 @router.get("/light-nav", response_class=HTMLResponse)

@@ -9,7 +9,7 @@ from typing import Optional
 from passlib.context import CryptContext
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-SECRET_KEY="carmidajadakjdkj"
+SECRET_KEY="3573edbd14471f053794e5f1f0f3483fb31cbe31e4cf40afe198ee0f36cb7914"
 ALGORITHM = "HS256"
 
 
@@ -94,6 +94,6 @@ def get_csrf_token(request:Request):
 def https_url_for(request:Request, name:str, **path_params:any)->str:
     http_url = request.url_for(name, **path_params)
     https_url = str(http_url).replace("http", "https",1)
-    return http_url 
+    return http_url
 
 
