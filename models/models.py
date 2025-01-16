@@ -40,4 +40,14 @@ class Agent(Base):
 
 
 
+class DossierNoNumeriser(Base):
+    __tablename__ = "dossiers_non_numerise"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True, unique=True)
+    title_number = Column(String, nullable=False, unique=True, index=True)
+    fullname = Column(String, nullable=False, index=True)
+    category = Column(String, nullable=False, index=True)
+
+
+
+
 

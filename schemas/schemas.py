@@ -2,7 +2,27 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 import datetime
 
+class DossierNoNumeriserBase(BaseModel):
+    title_number:str
+    fullname:str
+    category:str
+    class Config:
+        from_attributes = True
 
+class DossierNoNumeriserCreate(DossierNoNumeriserBase):
+    class Config:
+        from_attributes = True 
+
+class DossierNoNumeriserResponse(BaseModel):
+    title_number:str
+    fullname:str
+    category:str
+
+
+class DossierNoNumeriser(DossierNoNumeriserCreate):
+    id: int
+    class Config:
+        from_attributes = True
 class AgentBase(BaseModel):
     nni:int
     title_number:str

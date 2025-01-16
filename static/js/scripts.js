@@ -252,3 +252,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     
         // JavaScript function to navigate to agent details
+
+
+
+
+ // Fetch total count from the backend
+//  fetch('/admin/total-agents').then(response => response.json()).then(data => {
+//      // Update the number in the card
+//      document.getElementById('totalCount').textContent = data.total_agents;
+//  }).catch(error => {
+//      console.error('Error fetching total agents:', error);
+//      document.getElementById('totalCount').textContent = 'Error';
+//  });

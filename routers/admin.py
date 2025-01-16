@@ -14,6 +14,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import models.models as models
 import schemas.schemas as schemas
 import datetime
+from sqlalchemy.sql import text 
 from fastapi import APIRouter
 from config.connection import get_db
 from config.config import https_url_for
@@ -83,8 +84,11 @@ def index(request:Request,db:Session = Depends(get_db),
             "rows": [[agent.id, agent.title_number, agent.nni, agent.fullname, 
                     agent.date_of_birth,agent.birth_place,agent.category,agent.telephone, agent.document_path.replace("\\", "/")] for agent in agents]
         }
+
+        query = text("SELECT COUNT(*) FROM agents;")
+        total_agents = db.execute(query).scalar()
         
-        return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role})
+        return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role, "total_agents":total_agents})
     except SQLAlchemyError as e:
     
         raise HTTPException(status_code=500, detail="Une erreur produite dans la base des données.")
@@ -109,6 +113,21 @@ async def users_table(request: Request,db: Session = Depends(get_db),auth:str=De
     }
 
     return templates.TemplateResponse("users_table.html", {"request": request, "body_class": "sb-nav-fixed", "data":data,"role":role,"username":user.username,})
+
+
+@router.get("/admin/dossier-no-numeriser", response_class=HTMLResponse)
+def get_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+    dossiers = db.query(models.DossierNoNumeriser).all()
+    data = {
+        "columns": ["ID", "NUMERO DE TITRE", "Fullname", "Categorie"],  # Adjust based on your User model
+        "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category] for dossier in dossiers]
+    }
+
+    return templates.TemplateResponse("dossier_manquant.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
 
 
 
@@ -148,6 +167,56 @@ def register(request: Request, db:Session = Depends(get_db),auth:str=Depends(ver
     if not admin_user or admin_user.role != 'admin':
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement. vous n'avez pas droit de creer un utilisateur")
     return templates.TemplateResponse("register.html", {"request": request, "body_class": "bg-light"})
+
+@router.get("/admin/create-dossier-no-numeriser", response_class=HTMLResponse)
+def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+    return templates.TemplateResponse("create_dossier_manquant.html", {"request": request, "body_class": "bg-light"})
+
+
+
+@router.post('/admin/create-dossier-no-numeriser',status_code=status.HTTP_201_CREATED, response_model=List[schemas.DossierNoNumeriserResponse])
+async def create_dossier_no_numeriser(request:Request, 
+                 title_number:str=Form(...),
+                 fullname:str=Form(...),
+                 category:str=Form(...),
+                 db:Session=Depends(get_db),
+                 auth:str=Depends(verify_session)):
+    
+    admin_user = db.query(models.User).filter(models.User.email == auth).first()
+    try:
+        form_data = await request.form()
+        error_message = None
+        if not admin_user:
+            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs accrédités uniquement.")
+        
+        new_dossier = models.DossierNoNumeriser(
+            title_number=title_number,
+            fullname=fullname,
+            category=category
+        )
+        db.add(new_dossier)
+        db.commit()
+        db.refresh(new_dossier)
+        return templates.TemplateResponse(
+            "create_dossier_manquant.html",
+            {"request": request, "success_message": f"Vous avez ajouter avec succés le dossier manquant de : {fullname}!"}
+        )
+    except IntegrityError as e:
+            db.rollback()
+            if "ix_agents_nni" in str(e.orig) or "ix_agents_title_number" in str(e.orig):
+                error_message = "Un enregistrement avec ce NNI ou ce Numéro de titre existe déjà. Veuillez vérifier les données et réessayer."
+            else:
+                error_message = "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
+ 
+    return templates.TemplateResponse(
+            "create_agent.html",
+            {"request": request, "error_message": error_message, "form_data": form_data}
+        )
+
 @router.post('/admin/create-user', status_code=status.HTTP_201_CREATED, response_model=List[schemas.UserResponse])
 def create_user(request:Request,
                 first_name:str = Form(...),
@@ -338,6 +407,50 @@ async def get_agent(request:Request,agent_id: int, db: Session = Depends(get_db)
         # "document": agent.document_path.replace("\\", "/")  # Replace backslashes with forward slashes for correct file path in browser.
         
     }
+
+@router.get("/admin/categories-data")
+def get_categories_data(request:Request,db:Session=Depends(get_db), auth:str=Depends(verify_session)):
+    query = text("""
+        SELECT 
+            category, COUNT(*) AS count 
+        FROM 
+            agents 
+        GROUP BY 
+            category;
+    """)
+    result = db.execute(query).fetchall()
+    
+    data = [{"category": row[0], "count": row[1]} for row in result]
+    return {"data": data}
+
+
+@router.get("/admin/categories-birth-data")
+def get_categories_birth_data(db: Session = Depends(get_db)):
+    query = text("""
+        SELECT 
+            category, birth_place, COUNT(*) AS count 
+        FROM 
+            agents 
+        GROUP BY 
+            category, birth_place;
+    """)
+    result = db.execute(query).fetchall()
+    data = {}
+    for row in result:
+        category, birth_place, count = row
+        if category not in data:
+            data[category] = {}
+        data[category][birth_place] = count
+    return {"data": data}
+
+
+
+# @router.get("/admin/total-agents")
+# def get_total_agents(db: Session = Depends(get_db), auth:str=Depends(verify_session)):
+#     query = text("SELECT COUNT(*) FROM agents;")
+#     result = db.execute(query).scalar()
+#     return {"total_agents": result}
+
 
 @router.get("/admin/detail-agent/{agent_id}", response_class=HTMLResponse)
 async def agent_details(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str =Depends(verify_session)):

@@ -6,21 +6,22 @@ from fastapi.templating import Jinja2Templates
 from config.config import https_url_for
 
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-
-
-# import secrets
-# # Generate a random 256-bit key encoded as a hexadecimal string
-# secret_key = secrets.token_hex(32)  # 32 bytes = 256 bits
-# print("Generated JWT Secret Key:", secret_key)
-
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory='./static'), name="static")
 app.mount("/uploaded_files", StaticFiles(directory="uploaded_files"), name="uploaded_files")
 app.mount("/profiles", StaticFiles(directory="profiles"), name="profiles")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],)
 
 app.include_router(router)
 
