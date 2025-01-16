@@ -40,14 +40,14 @@ def root():
     return RedirectResponse("/login")
 @router.get("/login", response_class=HTMLResponse)
 def login(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request, "body_class": "bg-primary"})
+    return templates.TemplateResponse("login.html", {"request": request, "body_class": "bg-light"})
 
 
 @router.post("/login")
 def login_user(request: Request, email:str=Form(...), password:str=Form(...), db:Session=Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == email).first()
     if not user or not pwd_context.verify(password, user.hashed_password):
-        return templates.TemplateResponse("login.html", {"request": request, "body_class": "bg-primary", "error": "Mot de passe ou addresse email invalide"})
+        return templates.TemplateResponse("login.html", {"request": request, "body_class": "bg-light", "error": "Mot de passe ou addresse email invalide"})
     
     session_token = create_session_token(
         username=email,
@@ -491,7 +491,11 @@ async def agent_details(request:Request,agent_id: int, db: Session = Depends(get
 
 
 @router.put("/admin/edit-agent/{agent_id}")
-async def edit_agent(request:Request,agent_id: int, updated_data: dict, db: Session = Depends(get_db), auth:str=Depends(verify_session)):
+async def edit_agent(request:Request,
+                     agent_id: int, 
+                     updated_data: dict,
+                     db: Session = Depends(get_db), 
+                     auth:str=Depends(verify_session)):
     try:
         
         admin_user = db.query(models.User).filter(models.User.email == auth).first()

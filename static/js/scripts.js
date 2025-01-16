@@ -139,6 +139,17 @@ window.addEventListener('DOMContentLoaded', event => {
                 document.getElementById("editBirthPlace").value = data.birth_place;
                 document.getElementById("editCategory").value = data.category;
                 document.getElementById("editPhone").value = data.telephone;
+
+                const documentLink = document.getElementById("currentDocumentLink");
+                if(data.document_path ){
+                    documentLink.href = data.document_path;
+                    documentLink.textContent = "Voir le document actuel";
+                    documentLink.style.display = "block";
+                }else{
+                    documentLink.style.display = "none";
+                }
+
+
                 // Populate other fields as necessary
                 new bootstrap.Modal(document.getElementById("editAgentModal")).show();
             } else {

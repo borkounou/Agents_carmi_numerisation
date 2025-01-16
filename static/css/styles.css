@@ -11251,3 +11251,20 @@ body {
 .hide-admin {
   display: none;
 }
+
+
+
+.img-circle {
+  width: 20rem;  /* Adjust the size */
+  height: 150px; /* Adjust the size */
+  border-radius: 10%; /* Make the image circular */
+  object-fit: cover; /* Ensure the image fills the circle */
+}
+
+
+.logoCarmi{
+  width: 20rem;  /* Adjust the size */
+  height: 150px; /* Adjust the size */
+  border-radius: 10%; /* Make the image circular */
+  object-fit: cover; /* Ensure the image fills the circle */
+}
