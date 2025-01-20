@@ -75,7 +75,7 @@ window.addEventListener('DOMContentLoaded', event => {
                 });
 
                 if (response.ok) {
-                    alert("Agent deleted successfully!");
+                    alert("Agent supprimé avec succés!");
                     // Remove the row from the table
                     document.querySelector(`[data-user-id="${agentId}"]`).closest('tr').remove();
                 } else {
@@ -90,7 +90,7 @@ window.addEventListener('DOMContentLoaded', event => {
     }
 
 
-
+    let userIdToDelete = null;
     let agentIdToDelete = null;
 
     // Open the Delete Modal
@@ -98,6 +98,40 @@ window.addEventListener('DOMContentLoaded', event => {
         agentIdToDelete = agentId; // Store the agent ID
         new bootstrap.Modal(document.getElementById("deleteAgentModal")).show();
     }
+
+
+    function openUserDeleteModal(userId) {
+        userIdToDelete = userId; // Store the agent ID
+        new bootstrap.Modal(document.getElementById("deleteUserModal")).show();
+    }
+
+
+        // Confirm Delete
+    document.getElementById("confirmUserDeleteButton").addEventListener("click", async function () {
+            if (userIdToDelete !== null) {
+                try {
+                    const response = await fetch(`/admin/delete-user/${userIdToDelete}`, {
+                        method: 'DELETE',
+                    });
+    
+                    if (response.ok) {
+                        alert("Utilisateur supprimé avec succés!");
+                        // Remove the row from the table
+                        document.querySelector(`[data-user-id="${userIdToDelete}"]`).closest('tr').remove();
+                    } else {
+                        const error = await response.json();
+                        alert("Error: " + (error.detail || "Unable to delete agent."));
+                    }
+                } catch (error) {
+                    console.error("Error deleting agent:", error);
+                    alert("An unexpected error occurred.");
+                } finally {
+                    agentIdToDelete = null; // Reset the agent ID
+                    bootstrap.Modal.getInstance(document.getElementById("deleteUserModal")).hide();
+                }
+            }
+        });
+
 
     // Confirm Delete
     document.getElementById("confirmDeleteButton").addEventListener("click", async function () {
@@ -108,7 +142,7 @@ window.addEventListener('DOMContentLoaded', event => {
                 });
 
                 if (response.ok) {
-                    alert("Agent deleted successfully!");
+                    alert("Agent supprimé avec succés!");
                     // Remove the row from the table
                     document.querySelector(`[data-user-id="${agentIdToDelete}"]`).closest('tr').remove();
                 } else {

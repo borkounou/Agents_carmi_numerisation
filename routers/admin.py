@@ -218,13 +218,14 @@ async def create_dossier_no_numeriser(request:Request,
         )
 
 @router.post('/admin/create-user', status_code=status.HTTP_201_CREATED, response_model=List[schemas.UserResponse])
-def create_user(request:Request,
+async def create_user(request:Request,
                 first_name:str = Form(...),
                 last_name:str = Form(...),
                 username:str = Form(...),
                 email:str = Form(...),
                 password:str = Form(...),
                 gender:str = Form(...),
+                role:str = Form(...),
                 db:Session = Depends(get_db),
                 auth:str=Depends(verify_session)
                 ):
@@ -236,6 +237,8 @@ def create_user(request:Request,
     # Check if the user exists and if their role is 'admin'
         if not admin_user or admin_user.role != 'admin':
             raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+        form_data = await request.form()
+        error_message = None
         hashed_pw = hash_password(password)
         new_user = models.User(
             first_name=first_name,
@@ -243,7 +246,7 @@ def create_user(request:Request,
             username=username,
             email=email,
             gender=gender,
-            role="user",
+            role=role,
             hashed_password=hashed_pw
 
         )
@@ -251,28 +254,27 @@ def create_user(request:Request,
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
-       
-        return  RedirectResponse("/admin", status_code=303)
+        return templates.TemplateResponse(
+            "register.html",
+            {"request": request, "success_message": f"Vous avez créer avec succés l'utilisateurs d'email: {email}!"}
+        )
     
+
     except IntegrityError as e:
-        db.rollback()
-        if "psycopg2.errors.UniqueViolation" in str(e):
-            raise HTTPException(
-                status_code=StarletteHTTPException.status_code, 
-                detail="Verifier votre email et ressayer"
-            )
+            db.rollback()
+            if "ix_users_email" in str(e.orig) or "ix_users_username" in str(e.orig):
+                error_message = "Un enregistrement avec ce email ou ce Nom d'utilisateur existe déjà. Veuillez vérifier les données et réessayer."
+            else:
+                error_message = "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
+
+    return templates.TemplateResponse(
+            "register.html",
+            {"request": request, "error_message": error_message, "form_data": form_data}
+        )
+       
+       
     
-        raise HTTPException(
-            status_code=StarletteHTTPException.status_code, 
-            detail="Une erreur inattendue s'est produite. Veuillez contacter l'administrateur."
 
-        )
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=StarletteHTTPException.status_code, 
-            detail="We couldn't create a user for you."
-        )
     
 
 
@@ -292,8 +294,7 @@ async def create_agent(request:Request,
                  auth:str=Depends(verify_session)):
     
     admin_user = db.query(models.User).filter(models.User.email == auth).first()
-    # Check if the user exists and if their role is 'admin'
-    # if not admin_user or admin_user.role != 'admin':
+
     if not admin_user:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
 
@@ -373,12 +374,10 @@ def delete_user(request:Request, user_id:int, db:Session = Depends(get_db),auth:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
     user = db.query(models.User).filter(models.User.id==user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
     db.delete(user)
     db.commit()
-    return {"detail": f"User {user.username} deleted successfully"}
-
-
+    return {"detail": f"Suppression de l'utilisateur avec succés."}
 
 
 
@@ -444,12 +443,6 @@ def get_categories_birth_data(db: Session = Depends(get_db)):
     return {"data": data}
 
 
-
-# @router.get("/admin/total-agents")
-# def get_total_agents(db: Session = Depends(get_db), auth:str=Depends(verify_session)):
-#     query = text("SELECT COUNT(*) FROM agents;")
-#     result = db.execute(query).scalar()
-#     return {"total_agents": result}
 
 
 @router.get("/admin/detail-agent/{agent_id}", response_class=HTMLResponse)
