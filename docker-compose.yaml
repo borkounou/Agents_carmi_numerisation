@@ -18,6 +18,8 @@ services:
       - "127.0.0.1:${ARCHI_CARMI_LISTEN_PORT-8000}:8000"
     volumes:
       - ${PWD}/app:/archicarmi-app
+      - ${PWD}/app/uploaded_files:/uploaded_files
+      - ${PWD}/app/profiles:/profiles
   
     working_dir: /archicarmi-app
     user: ${DOCKER_COMPOSE_UID}:${DOCKER_COMPOSE_GID}
