@@ -1,0 +1,42 @@
+version: "2.1"
+
+services:
+  archicarmi:
+    build: build
+    restart: ${RESTART-no}
+    environment:
+      APP_DEBUG: ${APP_DEBUG-True}
+      NB_WORKERS: ${NB_WORKERS-4}
+      SECRET_KEY: ${SECRET_KEY}
+      TZ: Europe/Paris
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_BASE: ${DB_BASE}
+    ports:
+      - "127.0.0.1:${ARCHI_CARMI_LISTEN_PORT-8000}:8000"
+    volumes:
+      - ${PWD}/app:/archicarmi-app
+  
+    working_dir: /archicarmi-app
+    user: ${DOCKER_COMPOSE_UID}:${DOCKER_COMPOSE_GID}
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    container_name: postgres_container
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_BASE: ${DB_BASE}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
