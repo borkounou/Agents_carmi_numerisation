@@ -28,9 +28,9 @@ templates = Jinja2Templates(directory="templates")
 
 templates.env.globals["https_url_for"] = https_url_for
 
-UPLOAD_DIR = "uploaded_files"  # Directory to save uploaded files
+UPLOAD_DIR = "/uploaded_files"  # Directory to save uploaded files
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-UPLOAD_PROFILE ="profiles"
+UPLOAD_PROFILE ="/profiles"
 os.makedirs(UPLOAD_PROFILE, exist_ok=True)
 
 
