@@ -1,6 +1,4 @@
-
 #!/bin/bash
-
 set -eu
 
 if [ "$APP_DEBUG" == 'True' ] ; then
