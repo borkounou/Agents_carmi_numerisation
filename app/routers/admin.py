@@ -233,10 +233,10 @@ async def create_user(request:Request,
     
     try:
         
-        admin_user = db.query(models.User).filter(models.User.email== auth).first()
-    # Check if the user exists and if their role is 'admin'
-        if not admin_user or admin_user.role != 'admin':
-            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+    #     admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # # Check if the user exists and if their role is 'admin'
+    #     if not admin_user or admin_user.role != 'admin':
+    #         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement. vous n'avez pas droit de creer un utilisateur")
         form_data = await request.form()
         error_message = None
         hashed_pw = hash_password(password)
