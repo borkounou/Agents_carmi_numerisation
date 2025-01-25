@@ -217,7 +217,7 @@ async def create_dossier_no_numeriser(request:Request,
             {"request": request, "error_message": error_message, "form_data": form_data}
         )
 
-@router.post('/create-user', status_code=status.HTTP_201_CREATED, response_model=List[schemas.UserResponse])
+@router.post('/admin/create-user', status_code=status.HTTP_201_CREATED, response_model=List[schemas.UserResponse])
 async def create_user(request:Request,
                 first_name:str = Form(...),
                 last_name:str = Form(...),
@@ -227,16 +227,16 @@ async def create_user(request:Request,
                 gender:str = Form(...),
                 role:str = Form(...),
                 db:Session = Depends(get_db),
-                # auth:str=Depends(verify_session)
+                auth:str=Depends(verify_session)
                 ):
 
     
     try:
         
-    #     admin_user = db.query(models.User).filter(models.User.email== auth).first()
-    # # Check if the user exists and if their role is 'admin'
-    #     if not admin_user or admin_user.role != 'admin':
-    #         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+        admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+        if not admin_user or admin_user.role != 'admin':
+            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement. vous n'avez pas droit de creer un utilisateur")
         form_data = await request.form()
         error_message = None
         hashed_pw = hash_password(password)
