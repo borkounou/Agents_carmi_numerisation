@@ -227,7 +227,7 @@ async def create_user(request:Request,
                 gender:str = Form(...),
                 role:str = Form(...),
                 db:Session = Depends(get_db),
-                auth:str=Depends(verify_session)
+                # auth:str=Depends(verify_session)
                 ):
 
     
