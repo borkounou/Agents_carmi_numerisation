@@ -217,7 +217,7 @@ async def create_dossier_no_numeriser(request:Request,
             {"request": request, "error_message": error_message, "form_data": form_data}
         )
 
-@router.post('/admin/create-user', status_code=status.HTTP_201_CREATED, response_model=List[schemas.UserResponse])
+@router.post('/create-user', status_code=status.HTTP_201_CREATED, response_model=List[schemas.UserResponse])
 async def create_user(request:Request,
                 first_name:str = Form(...),
                 last_name:str = Form(...),
