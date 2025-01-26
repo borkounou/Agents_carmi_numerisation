@@ -8,8 +8,8 @@ from typing import Optional
 # from starlette import status
 from passlib.context import CryptContext
 
-SECRET_KEY="3573edbd14471f053794e5f1f0f3483fb31cbe31e4cf40afe198ee0f36cb7914"
 SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY="3573edbd14471f053794e5f1f0f3483fb31cbe31e4cf40afe198ee0f36cb7914"
 ALGORITHM = "HS256"
 
 
