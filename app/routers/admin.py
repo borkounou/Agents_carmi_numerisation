@@ -8,6 +8,7 @@ from starlette import status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pathlib import Path
+from typing import List, Optional
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from config.connection import get_db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -28,9 +29,9 @@ templates = Jinja2Templates(directory="templates")
 
 templates.env.globals["https_url_for"] = https_url_for
 
-UPLOAD_DIR = "/uploaded_files"  # Directory to save uploaded files
+UPLOAD_DIR = "uploaded_files"  # Directory to save uploaded files
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-UPLOAD_PROFILE ="/profiles"
+UPLOAD_PROFILE ="profiles"
 os.makedirs(UPLOAD_PROFILE, exist_ok=True)
 
 
@@ -289,32 +290,36 @@ async def create_agent(request:Request,
                  telephone:str=Form(...),
                  address:str=Form(...),
                  document: UploadFile = File(...),
-                 profile:UploadFile =File(None),
+                 profile:Optional[UploadFile] = File(None),
                  db:Session=Depends(get_db),
                  auth:str=Depends(verify_session)):
     
-    admin_user = db.query(models.User).filter(models.User.email == auth).first()
-
-    if not admin_user:
-        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
-
-    form_data = await request.form()
-    error_message = None
-    file_path = f"{UPLOAD_DIR}/{document.filename}"#Path(UPLOAD_DIR) /document.filename
-    with open(file_path, 'wb') as file:
-        content = await document.read()
-        file.write(content)
-
-    if profile : 
-        profile_image_path =f"{UPLOAD_PROFILE}/{profile.filename}"
-        with open(profile_image_path, 'wb') as f:
-            content = await profile.read()
-            f.write(content)
-
-    else:
-        profile_image_path =f"{UPLOAD_PROFILE}/profile_default.png"
     
     try:
+        admin_user = db.query(models.User).filter(models.User.email == auth).first()
+
+        if not admin_user:
+            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+
+        form_data = await request.form()
+        error_message = None
+        file_path = f"{UPLOAD_DIR}/{document.filename}"#Path(UPLOAD_DIR) /document.filename
+        with open(file_path, 'wb') as file:
+            content = await document.read()
+            file.write(content)
+
+        print(type(profile))
+
+        if profile and profile.filename: 
+            profile_image_path =f"{UPLOAD_PROFILE}/{profile.filename}"
+            with open(profile_image_path, 'wb') as f:
+                content = await profile.read()
+                f.write(content)
+
+        else:
+           
+            profile_image_path = f"{UPLOAD_PROFILE}/profile_default.png"#Path(UPLOAD_PROFILE)+"/profile_default.png"
+        
         new_agent = models.Agent(
                 nni=nni, 
                 title_number=title_number, 
