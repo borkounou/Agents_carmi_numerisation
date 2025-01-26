@@ -1,7 +1,7 @@
 services:
   archicarmi:
     build: build
-    restart: ${RESTART-no}
+    restart: always
     environment:
       APP_DEBUG: ${APP_DEBUG-True}
       NB_WORKERS: ${NB_WORKERS-4}
