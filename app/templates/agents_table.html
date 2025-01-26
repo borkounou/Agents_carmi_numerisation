@@ -49,7 +49,21 @@
                     
                                     {% endfor %}
                                     <td style="text-align: center; width: 100px;" {% if role != 'admin' %} style="display:none;" {% endif %}>
-                                        {%include "main_buttons.html"%}
+                                        <button class="btn btn-danger btn-sm table-action-btn delete-user-btn" data-user-id="{{ row[0] }}" onclick="openDeleteModal({{ row[0] }})">
+                                            Supprimer
+                                        </button>
+                                        <button class="btn btn-primary btn-sm table-action-btn" data-user-id="{{ row[0] }}" onclick="openEditModal({{ row[0] }})">
+                                            Modifier
+                                        </button>
+                                        <button class="btn btn-info btn-sm table-action-btn" data-pdf-path="{{ row[8] }}" onclick="openViewModal('{{ row[8] }}')">
+                                            Voir
+                                        </button>
+                                        
+                                        
+                                        
+                                        <button class="btn btn-primary btn-sm table-action-btn" data-user-id="{{ row[0] }}" onclick="navigateToAgentDetails({{ row[0] }})">
+                                            Visualiser
+                                        </button>
                                     </td>
                                 </tr>
 
@@ -60,7 +74,88 @@
             </div>
         </div>
 
-{%include "main_modals.html"%}
+
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editAgentModal" tabindex="-1" aria-labelledby="editAgentModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editAgentModalLabel">Modifier l'agent</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editAgentForm">
+                            <input type="hidden" id="editAgentId" name="id">
+                            <div class="mb-3">
+                                <label for="editNNI" class="form-label">NNI</label>
+                                <input type="text" class="form-control" id="editNNI" name="nni" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editFullname" class="form-label">Nom Complet</label>
+                                <input type="text" class="form-control" id="editFullname" name="fullname" required>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="editTitleNumber" class="form-label">Numero de Titre</label>
+                                <input type="text" class="form-control" id="editTitleNumber" name="title_number" required>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="editDateOfBirth" class="form-label">Date de Naissance</label>
+                                <input type="date" class="form-control" id="editDateOfBirth" name="date_of_birth" required>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="editBirthPlace" class="form-label">Lieu de Naissance</label>
+                                <input type="text" class="form-control" id="editBirthPlace" name="birth_place" required>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="editCategory" class="form-label">Catégorie</label>
+                                <input type="text" class="form-control" id="editCategory" name="category" required>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="editPhone" class="form-label">Telephone</label>
+                                <input type="text" class="form-control" id="editPhone" name="telephone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editDocument" class="form-label">Document PDF</label>
+                                <input type="file" class="form-control" id="editDocument" name="document" accept="application/pdf">
+                                <a id="currentDocumentLink" href="#" target="_blank" class="mt-2 d-block">Voir le document actuel</a>
+                            </div>
+                            <!-- Add other fields as needed -->
+                            <button type="submit" class="btn btn-primary">Sauvegarder les changements</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteAgentModal" tabindex="-1" aria-labelledby="deleteAgentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteAgentModalLabel">Confirmer la suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Êtes-vous sûr de vouloir supprimer cet agent ? Cette action est irréversible.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteButton">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
 
 {%include "pdfModal.html"%}
     </main>

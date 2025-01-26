@@ -7,22 +7,22 @@
 <div id="layoutSidenav_content">
     <main>
         <div class="container-fluid px-4">
-            <h1 class="mt-4">Dossiers des agents</h1>
+            <h1 class="mt-4">Les utilisateurs et leurs roles</h1>
             <ol class="breadcrumb mb-4">
-                <li class="breadcrumb-item active">Touts les dossiers numerisés des agents de Carmi </li>
+                <li class="breadcrumb-item active">Touts les utilisateurs qui ont droit d'accès à cette plateforme </li>
             </ol>
             
 
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-table me-1"></i>
-                     Table des agents
+                     Table des utilisateurs ayant droit d'accès
                      <div class="d-flex align-items-center justify-content-end">
                         <a class="btn btn-success btn-sm table-action-btn" href="{{https_url_for(request,'register')}}"> Ajouter un utilisateur</a>
                     </div>
                 </div>
                 <div class="card-body">
-                    <table id="datatablesSimple">
+                    <table id="usersTable">
                         <thead>
                             <tr>
                             {%for column in data["columns"]%}
@@ -75,7 +75,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                Êtes-vous sûr de vouloir supprimer cet agent ? Cette action est irréversible.
+                                Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

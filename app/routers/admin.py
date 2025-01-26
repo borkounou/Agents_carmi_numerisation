@@ -354,7 +354,7 @@ async def create_agent(request:Request,
         
    
 
-@router.delete("/admin/delete-agent/{agent_id}")
+@router.delete("/admin/delete-agent/{agent_id}", status_code=status.HTTP_200_OK)
 async def delete_agent(request:Request,agent_id: int, db: Session = Depends(get_db),auth:str=Depends(verify_session)):
 
 
