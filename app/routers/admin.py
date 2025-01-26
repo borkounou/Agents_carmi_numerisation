@@ -87,9 +87,11 @@ def index(request:Request,db:Session = Depends(get_db),
         }
 
         query = text("SELECT COUNT(*) FROM agents;")
+        query_manquant = text("SELECT COUNT(*) FROM dossiers_non_numerise;")
         total_agents = db.execute(query).scalar()
+        total_non_numerise = db.execute(query_manquant).scalar()
         
-        return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role, "total_agents":total_agents})
+        return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role, "total_agents":total_agents, "total_manquant":total_non_numerise})
     except SQLAlchemyError as e:
     
         raise HTTPException(status_code=500, detail="Une erreur produite dans la base des données.")

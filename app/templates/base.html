@@ -7,8 +7,12 @@
         <meta name="description" content="" />
         <meta name="author" content="" />
 
-
+        
         <title>{% block head_title%}{%endblock%}</title>
+           <!-- Favicon -->
+        <!-- <link href="img/favicon.ico" rel="icon"> -->
+        <link rel="shortcut icon" href="../static/assets/img/favicon.ico" type="image/x-icon" />
+
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
         
         <link rel="stylesheet" type="text/css" href="{{ https_url_for(request,'static', path='css/styles.css') }}">
