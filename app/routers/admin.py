@@ -310,7 +310,6 @@ async def create_agent(request:Request,
             content = await document.read()
             file.write(content)
 
-        print(type(profile))
 
         if profile and profile.filename: 
             profile_image_path =f"{UPLOAD_PROFILE}/{profile.filename}"
@@ -483,39 +482,74 @@ async def agent_details(request:Request,agent_id: int, db: Session = Depends(get
     
     except Exception as e:
         raise HTTPException(
-            status_code=StarletteHTTPException.status_code, 
+            status_code=500, 
             detail=str(e)
         )
 
 
 
-
 @router.put("/admin/edit-agent/{agent_id}")
-async def edit_agent(request:Request,
-                     agent_id: int, 
-                     updated_data: dict,
-                     db: Session = Depends(get_db), 
-                     auth:str=Depends(verify_session)):
+async def edit_agent(
+    request: Request,
+    agent_id: int,
+    nni: Optional[int] = Form(None),
+    title_number: Optional[str] = Form(None),
+    fullname: Optional[str] = Form(None),
+    category: Optional[str] = Form(None),
+    date_of_birth: datetime.date = Form(...),
+    birth_place: Optional[str] = Form(None),
+    telephone: Optional[str] = Form(None),
+    address: Optional[str] = Form(None),
+    document: Optional[UploadFile] = File(None),
+    profile: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    auth: str = Depends(verify_session),
+):
     try:
-        
         admin_user = db.query(models.User).filter(models.User.email == auth).first()
-    
+
         if not admin_user or admin_user.role != 'admin':
             raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+
         agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
         if not agent:
             raise HTTPException(status_code=404, detail="Agent inexistant.")
-        
-        for key, value in updated_data.items():
-            setattr(agent, key, value)
+
+        # Update agent details
+        agent.nni = nni
+        agent.title_number = title_number
+        agent.fullname = fullname
+        agent.date_of_birth = date_of_birth
+        agent.birth_place = birth_place
+        agent.category = category
+        agent.telephone = telephone
+        agent.address = address
+
+        if document and document.filename:
+            document_path = f"{UPLOAD_DIR}/{document.filename}"
+            with open(document_path, "wb") as f:
+                content = await document.read()
+                f.write(content)
+            agent.document_path = document_path.replace("\\", "/")
+
+        if profile and profile.filename:
+            profile_path = f"{UPLOAD_PROFILE}/{profile.filename}"
+            with open(profile_path, "wb") as f:
+                content = await profile.read()
+                f.write(content)
+            agent.profile_path = profile_path.replace("\\", "/")
+
         db.commit()
         db.refresh(agent)
-        return {"message": "Mise à jour correcte!."}
+        return {"message": "Mise à jour correcte!"}
+
     except Exception as e:
+        db.rollback()
         raise HTTPException(
-            status_code=StarletteHTTPException.status_code, 
-            detail="Nous ne pouvons pas modifier cet agent. Contacter l'administrateur"
+            status_code=500,
+            detail=f"Nous ne pouvons pas modifier cet agent. Contacter l'administrateur. {str(e)}"
         )
+
 
 
 
