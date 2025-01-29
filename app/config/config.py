@@ -2,8 +2,9 @@ import secrets
 import hashlib
 from fastapi import Request, HTTPException,status
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,timezone
 import jwt # 
+import time 
 from typing import Optional 
 # from starlette import status
 from passlib.context import CryptContext
@@ -25,11 +26,14 @@ def hash_password(password:str)->str:
 def verify_password(plain_password:str, hashed_password:str)->str:
     return pwd_context.verify(plain_password, hashed_password)
 
+# Correct way to get the current UTC time as a timezone-aware datetime object
+current_utc_time = datetime.now(timezone.utc)
 
-def create_session_token(username:str, expires_in:int = 3600, ip:Optional[str]=None,user_agent:Optional[str]=None)->str:
+def create_session_token(username:str, expires_in:int = 7200, ip:Optional[str]=None,user_agent:Optional[str]=None)->str:
+    
     payload = {
         "sub":username,
-        "exp":datetime.utcnow()+timedelta(seconds=expires_in),
+        "exp":datetime.now(timezone.utc)+timedelta(seconds=expires_in),
         "ip":ip,
         "user_agent":user_agent
     }
@@ -94,6 +98,6 @@ def get_csrf_token(request:Request):
 def https_url_for(request:Request, name:str, **path_params:any)->str:
     http_url = request.url_for(name, **path_params)
     https_url = str(http_url).replace("http", "https",1)
-    return https_url
+    return http_url
 
 
