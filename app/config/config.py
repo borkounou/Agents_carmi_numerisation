@@ -30,13 +30,12 @@ def verify_password(plain_password:str, hashed_password:str)->str:
 current_utc_time = datetime.now(timezone.utc)
 
 def create_session_token(username:str, expires_in:int = 7200, ip:Optional[str]=None,user_agent:Optional[str]=None)->str:
-    now  = datetime.utcnow()
-    expiration = now + timedelta(seconds=expires_in)
-    print(f"Server time: {now}, Token expiration: {expiration}")
+    current_time = int(time.time())
+
     payload = {
         "sub":username,
-        "iat":now,
-        "exp":expiration,#datetime.now(timezone.utc)+timedelta(seconds=expires_in),
+        "iat":current_time,
+        "exp":current_time + expires_in,
         "ip":ip,
         "user_agent":user_agent
     }
@@ -55,7 +54,7 @@ def verify_session(request: Request):
         # Decode and validate the token 
         payload = jwt.decode(token, SECRET_KEY, 
                              algorithms=[ALGORITHM],
-                             options={"leeway": timedelta(seconds=60).total_seconds()})
+                             options={"leeway": timedelta(seconds=3600).total_seconds()})
         username = payload.get("sub")
         if not username:
             raise HTTPException(
