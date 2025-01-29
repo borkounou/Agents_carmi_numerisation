@@ -35,7 +35,6 @@ def create_session_token(username:str, expires_in:int = 7200, ip:Optional[str]=N
     payload = {
         "sub":username,
         "iat":current_time,
-        "exp":current_time + expires_in,
         "ip":ip,
         "user_agent":user_agent
     }
