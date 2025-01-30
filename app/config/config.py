@@ -35,6 +35,7 @@ def create_session_token(username:str, expires_in:int = 7200, ip:Optional[str]=N
     payload = {
         "sub":username,
         "iat":current_time,
+        "exp":current_time + expires_in,
         "ip":ip,
         "user_agent":user_agent
     }
@@ -51,9 +52,7 @@ def verify_session(request: Request):
         )
     try:
         # Decode and validate the token 
-        payload = jwt.decode(token, SECRET_KEY, 
-                             algorithms=[ALGORITHM],
-                             options={"leeway": timedelta(seconds=3600).total_seconds()})
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
         if not username:
             raise HTTPException(
@@ -102,6 +101,6 @@ def get_csrf_token(request:Request):
 def https_url_for(request:Request, name:str, **path_params:any)->str:
     http_url = request.url_for(name, **path_params)
     https_url = str(http_url).replace("http", "https",1)
-    return http_url
+    return https_url
 
 

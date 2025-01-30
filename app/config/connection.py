@@ -32,6 +32,6 @@ try:
     connection = engine.connect()
     connection.close()
     print("connection successfully established")
-
+ 
 except Exception as e:
     print("Error connecting to database")
