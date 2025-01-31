@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timedelta,timezone
 import jwt # 
 import time 
+import logging 
 from typing import Optional 
 # from starlette import status
 from passlib.context import CryptContext
@@ -13,7 +14,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 SECRET_KEY="3573edbd14471f053794e5f1f0f3483fb31cbe31e4cf40afe198ee0f36cb7914"
 ALGORITHM = "HS256"
 
-
+logging.basicConfig(level=logging.DEBUG)
 csrf_secret = os.getenv("CSRF_SECRET_KEY")
 
 
@@ -46,13 +47,14 @@ def create_session_token(username:str, expires_in:int = 7200, ip:Optional[str]=N
 def verify_session(request: Request):
     token = request.cookies.get("session_token")
     if not token:
+        logging.error("No session token found in cookies")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="User session is invalid or expired"
+            detail="User session is invalid or expired or No session token found in cookies"
         )
     try:
         # Decode and validate the token 
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"leeway":10})
         username = payload.get("sub")
         if not username:
             raise HTTPException(
@@ -62,6 +64,8 @@ def verify_session(request: Request):
         # Optional: Bind the session to the user's IP and User-Agent
         request_ip = request.client.host
         request_user_agent = request.headers.get("user-agent")
+        logging.debug(f"Token payload: {payload}")
+        logging.debug(f"Request IP: {request_ip}, Token IP: {payload.get('ip')}")
 
         if payload.get("ip") and payload["ip"] !=request_ip:
             raise HTTPException(

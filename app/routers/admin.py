@@ -57,7 +57,7 @@ def login_user(request: Request, email:str=Form(...), password:str=Form(...), db
 
     )
     response = RedirectResponse("/admin", status_code=303)
-    response.set_cookie(key="session_token", value=session_token, httponly=True, secure=True,samesite="strict")  # Set cookie for 1 hour
+    response.set_cookie(key="session_token", value=session_token, httponly=True, secure=False,samesite="strict")  # Set cookie for 1 hour
     return response
 
 
