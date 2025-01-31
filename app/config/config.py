@@ -50,7 +50,7 @@ def verify_session(request: Request):
         logging.error("No session token found in cookies")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="User session is invalid or expired or No session token found in cookies"
+            detail="User session is invalid or expired"
         )
     try:
         # Decode and validate the token 
@@ -105,6 +105,6 @@ def get_csrf_token(request:Request):
 def https_url_for(request:Request, name:str, **path_params:any)->str:
     http_url = request.url_for(name, **path_params)
     https_url = str(http_url).replace("http", "https",1)
-    return https_url
+    return http_url
 
 
