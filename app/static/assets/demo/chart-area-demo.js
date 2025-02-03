@@ -3,25 +3,27 @@ Chart.defaults.global.defaultFontFamily = '-apple-system,system-ui,BlinkMacSyste
 Chart.defaults.global.defaultFontColor = '#292b2c';
 
 
-
 fetch("/admin/categories-birth-data")
     .then(response => response.json())
     .then(data => {
         const labels = Object.keys(data.data); // Categories
-        const birthPlaces = new Set(); // Collect unique birth places
+        const birthYears = new Set(); // Collect unique birth years
         const datasets = [];
 
         // Prepare datasets
-        Object.entries(data.data).forEach(([category, birthPlaceData]) => {
-            Object.keys(birthPlaceData).forEach(birthPlace => {
-                birthPlaces.add(birthPlace);
+        Object.entries(data.data).forEach(([category, birthYearData]) => {
+            Object.keys(birthYearData).forEach(birthYear => {
+                birthYears.add(birthYear);
             });
         });
 
-        birthPlaces.forEach(birthPlace => {
+        // Sort birth years in ascending order
+        const sortedBirthYears = Array.from(birthYears).sort((a, b) => a - b);
+
+        sortedBirthYears.forEach(birthYear => {
             datasets.push({
-                label: birthPlace,
-                data: labels.map(label => data.data[label][birthPlace] || 0), // Fill missing data with 0
+                label: birthYear, // Use birth year as the label
+                data: labels.map(label => data.data[label][birthYear] || 0), // Fill missing data with 0
                 borderColor: getRandomColor(),
                 fill: false
             });
@@ -48,7 +50,52 @@ fetch("/admin/categories-birth-data")
         });
     });
 
-// Helper function for random colors
+
+// fetch("/admin/categories-birth-data")
+//     .then(response => response.json())
+//     .then(data => {
+//         const labels = Object.keys(data.data); // Categories
+//         const birthPlaces = new Set(); // Collect unique birth places
+//         const datasets = [];
+
+//         // Prepare datasets
+//         Object.entries(data.data).forEach(([category, birthPlaceData]) => {
+//             Object.keys(birthPlaceData).forEach(birthPlace => {
+//                 birthPlaces.add(birthPlace);
+//             });
+//         });
+
+//         birthPlaces.forEach(birthPlace => {
+//             datasets.push({
+//                 label: birthPlace,
+//                 data: labels.map(label => data.data[label][birthPlace] || 0), // Fill missing data with 0
+//                 borderColor: getRandomColor(),
+//                 fill: false
+//             });
+//         });
+
+//         // Generate chart
+//         const ctx = document.getElementById("myAreaChart").getContext("2d");
+//         new Chart(ctx, {
+//             type: 'line',
+//             data: {
+//                 labels: labels, // Categories
+//                 datasets: datasets
+//             },
+//             options: {
+//                 legend: {
+//                     display: true
+//                 },
+//                 scales: {
+//                     y: {
+//                         beginAtZero: true
+//                     }
+//                 }
+//             }
+//         });
+//     });
+
+// // Helper function for random colors
 function getRandomColor() {
     const letters = '0123456789ABCDEF';
     let color = '#';

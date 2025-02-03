@@ -433,20 +433,41 @@ def get_categories_data(request:Request,db:Session=Depends(get_db), auth:str=Dep
 def get_categories_birth_data(db: Session = Depends(get_db)):
     query = text("""
         SELECT 
-            category, birth_place, COUNT(*) AS count 
+            category, 
+            EXTRACT(YEAR FROM date_of_birth) AS birth_year,
+            COUNT(*) AS count 
         FROM 
             agents 
         GROUP BY 
-            category, birth_place;
+            category, birth_year;
     """)
     result = db.execute(query).fetchall()
     data = {}
     for row in result:
-        category, birth_place, count = row
+        category, birth_year, count = row
         if category not in data:
             data[category] = {}
-        data[category][birth_place] = count
+        data[category][birth_year] = count
     return {"data": data}
+
+# @router.get("/admin/categories-birth-data")
+# def get_categories_birth_data(db: Session = Depends(get_db)):
+#     query = text("""
+#         SELECT 
+#             category, birth_place, COUNT(*) AS count 
+#         FROM 
+#             agents 
+#         GROUP BY 
+#             category, birth_place;
+#     """)
+#     result = db.execute(query).fetchall()
+#     data = {}
+#     for row in result:
+#         category, birth_place, count = row
+#         if category not in data:
+#             data[category] = {}
+#         data[category][birth_place] = count
+#     return {"data": data}
 
 
 
@@ -556,6 +577,10 @@ async def edit_agent(
 @router.get("/password", response_class=HTMLResponse)
 def password(request: Request):
     return templates.TemplateResponse("password.html", {"request": request, "body_class": "bg-primary"})
+
+@router.get("/charts", response_class=HTMLResponse)
+def charts(request: Request):
+    return templates.TemplateResponse("charts.html", {"request": request, "body_class": "sb-nav-fixed"})
 
 
 
