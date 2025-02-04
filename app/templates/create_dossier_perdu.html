@@ -1,0 +1,97 @@
+{%extends "base.html"%}
+
+{% block head_title%}Dashboard - SB Admin{%endblock%}
+
+
+{%block content%}
+
+<div class="container">
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header"><h3 class="text-center font-weight-light my-4">Ajouter un dossier égaré</h3></div>
+                   <!-- Display Error Message -->
+    {% if error_message %}
+    <div class="error text-center font-weight-light my-4" style="color: red; margin-bottom: 10px;">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    <!-- Display Success Message -->
+    {% if success_message %}
+    <div class="success text-center font-weight-light my-4" style="color: green; margin-bottom: 10px;">
+        {{ success_message }}
+    </div>
+    {% endif %}
+                <div class="card-body">
+                    <form method="post" action="/admin/create-dossier-perdu" enctype="multipart/form-data">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-floating mb-3">
+                                    <input class="form-control" id="inputTitleNumber" type="text" placeholder="Entrer votre Numero de titre" name="title_number" />
+                                    <label for="inputTitleNumber">Numéro de titre</label>
+                                </div>
+                            </div>
+        
+        
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-floating mb-3">
+                                    <input class="form-control" id="inputFullname" type="text" placeholder=" Nom Complet" name="fullname" required />
+                                    <label for="inputFullname">Nom et Prénom</label>
+                                </div>
+                            </div>
+
+        
+                        </div>
+
+
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-floating mb-3">
+                                    <select class="form-control" id="inputCategory" name="category" required>
+                                        <option value="Agent Militaire">Agent Militaire</option>
+                                        <option value="Agent Militaire Veuve">Agent Veuve</option>
+                                        <option value="Agent Garde">Agent Garde</option>
+                                    </select>
+                                    <label for="inputCategory">Catégorie</label>
+                                </div>
+                            </div>
+                  
+                        </div>
+
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-floating mb-3">
+                                    <input class="form-control" id="inputFolder" type="text" placeholder=" Numero de dossier" name="folder" required />
+                                    <label for="inputFolder">Dossier Numero</label>
+                                </div>
+                            </div>
+
+        
+                        </div>
+                
+
+
+                        <div class="mt-4 mb-0">
+                            <div class="d-grid"><button class="btn btn-primary btn-block" type="submit">Sauvegarder le dossier</button></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-12">
+            {%include "footer.html"%}
+        </div>
+    </div>
+    
+</div>
+        </div>
+
+        {%endblock%}

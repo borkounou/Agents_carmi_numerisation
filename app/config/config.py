@@ -2,10 +2,10 @@ import secrets
 import hashlib
 from fastapi import Request, HTTPException,status
 import os
-from datetime import datetime, timedelta,timezone
+from datetime import datetime,timezone
 import jwt # 
 import time 
-import logging 
+# import logging 
 from typing import Optional 
 # from starlette import status
 from passlib.context import CryptContext
@@ -14,7 +14,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 SECRET_KEY="3573edbd14471f053794e5f1f0f3483fb31cbe31e4cf40afe198ee0f36cb7914"
 ALGORITHM = "HS256"
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 csrf_secret = os.getenv("CSRF_SECRET_KEY")
 
 
@@ -47,10 +47,10 @@ def create_session_token(username:str, expires_in:int = 7200, ip:Optional[str]=N
 def verify_session(request: Request):
     token = request.cookies.get("session_token")
     if not token:
-        logging.error("No session token found in cookies")
+        # logging.error("No session token found in cookies")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="User session is invalid or expired"
+            detail="La session utilisateur est invalide ou expirée."
         )
     try:
         # Decode and validate the token 
@@ -59,23 +59,23 @@ def verify_session(request: Request):
         if not username:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid session token"
+                detail="Token de session invalide."
             )
         # Optional: Bind the session to the user's IP and User-Agent
         request_ip = request.client.host
         request_user_agent = request.headers.get("user-agent")
-        logging.debug(f"Token payload: {payload}")
-        logging.debug(f"Request IP: {request_ip}, Token IP: {payload.get('ip')}")
+        # logging.debug(f"Token payload: {payload}")
+        # logging.debug(f"Request IP: {request_ip}, Token IP: {payload.get('ip')}")
 
         if payload.get("ip") and payload["ip"] !=request_ip:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Session token is not valid for this IP address"
+                detail="Le token de session n'est pas valide pour cette adresse IP."
             )
         if payload.get("user_agent") and payload["user_agent"]!=request_user_agent:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Session token is not valid for this device"
+                detail="Le token de session n'est pas valide pour cet appareil."
 
             )
         
@@ -83,13 +83,13 @@ def verify_session(request: Request):
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Session token has expired"
+            detail="Le token de session a expiré"
         )
     
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid session token"
+            detail="Token de session invalide."
         )
 
 def generate_csrf_token() -> str:

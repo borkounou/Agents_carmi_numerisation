@@ -2,6 +2,35 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 import datetime
 
+
+class DossierPerduBase(BaseModel):
+    title_number:str
+    fullname:str
+    category:str
+    folder:str
+    class Config:
+        from_attributes = True
+
+class DossierPerduCreate(DossierPerduBase):
+    class Config:
+        from_attributes = True 
+
+class DossierPerduResponse(BaseModel):
+    title_number:str
+    fullname:str
+    category:str
+    folder:str
+
+
+class DossierPerdu(DossierPerduCreate):
+    id: int
+    class Config:
+        from_attributes = True
+
+
+
+#----------------------------------------------------------------
+
 class DossierNoNumeriserBase(BaseModel):
     title_number:str
     fullname:str

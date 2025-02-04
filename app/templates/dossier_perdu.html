@@ -1,0 +1,68 @@
+{%extends "base.html"%}
+
+{% block head_title%}Dossiers perdus{%endblock%}
+
+
+{%block content%}
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+            <h1 class="mt-4">Dossiers perdus ou égarés aprés la numérisation</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active">Touts les dossiers perdus aprés la numerisation </li>
+            </ol>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                     Liste de dossiers perdus aprés la numerisation
+                     <div class="d-flex align-items-center justify-content-end">
+                        <a class="btn btn-success btn-sm table-action-btn" href="{{https_url_for(request,'create_dossier_perdu')}}"> Ajouter un dossier manquant</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table id="datatablesSimple">
+                        <thead>
+                            <tr>
+                            {%for column in data["columns"]%}
+                                <th>{{column}}</th>
+                            {% endfor %}
+                            <!-- <th class="{% if role != 'admin' %}hidden{% endif %}">action</th> -->
+                            
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr id="tableFoot">
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {%for row in data["rows"]%}
+                                <tr data-toggle="modal"  style="cursor: pointer;">
+                                    {%for cell in row%}
+
+                                        <td>
+                                            {{cell}}
+                                    
+                                        </td>
+                    
+                                    {% endfor %}
+                                  
+                                </tr>
+
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    {%include "footer.html"%}
+
+</div>
+
+{%endblock%}
+
+
+

@@ -1,7 +1,7 @@
 
-from sqlalchemy import Column, Integer, String,Boolean,TIMESTAMP,text,Date
+from sqlalchemy import Column, Integer, String,TIMESTAMP,text,Date
 from sqlalchemy.orm import declarative_base 
-import datetime 
+
 
 
 Base = declarative_base()
@@ -46,6 +46,16 @@ class DossierNoNumeriser(Base):
     title_number = Column(String, nullable=False, unique=True, index=True)
     fullname = Column(String, nullable=False, index=True)
     category = Column(String, nullable=False, index=True)
+
+
+
+class DossierPerdu(Base):
+    __tablename__ = "dossier_perdu"
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True, unique=True)
+    title_number = Column(String, nullable=False, unique=True, index=True)
+    fullname = Column(String, nullable=False, index=True)
+    category = Column(String, nullable=False, index=True)
+    folder = Column(String, nullable=False, index=True)
 
 
 

@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pathlib import Path
 from typing import List, Optional
-from starlette.exceptions import HTTPException as StarletteHTTPException
+# from starlette.exceptions import HTTPException as StarletteHTTPException
 from config.connection import get_db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import models.models as models
@@ -123,7 +123,7 @@ def get_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth
     admin_user = db.query(models.User).filter(models.User.email== auth).first()
     # Check if the user exists and if their role is 'admin'
     if not admin_user:
-        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit 😊😊")
     dossiers = db.query(models.DossierNoNumeriser).all()
     data = {
         "columns": ["ID", "NUMERO DE TITRE", "Fullname", "Categorie"],  # Adjust based on your User model
@@ -132,6 +132,24 @@ def get_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth
 
     return templates.TemplateResponse("dossier_manquant.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
 
+
+#================================================================
+
+@router.get("/admin/dossier-perdu", response_class=HTMLResponse)
+def get_dossier_perdu(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit 😊😊")
+    dossiers = db.query(models.DossierPerdu).all()
+    data = {
+        "columns": ["ID", "NUMERO DE TITRE", "Fullname", "Categorie","Dossier Numero"],  # Adjust based on your User model
+        "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category, dossier.folder] for dossier in dossiers]
+    }
+
+    return templates.TemplateResponse("dossier_perdu.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
+
+#================================================================
 
 
 @router.get("/admin/agents-table", response_class=HTMLResponse)
@@ -168,7 +186,7 @@ def register(request: Request, db:Session = Depends(get_db),auth:str=Depends(ver
     admin_user = db.query(models.User).filter(models.User.email== auth).first()
     # Check if the user exists and if their role is 'admin'
     if not admin_user or admin_user.role != 'admin':
-        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+        raise HTTPException(status_code=403, detail="Accès interdit : Cette action est réservée aux administrateurs. Vous n'êtes pas autorisé à créer un utilisateur.")
     return templates.TemplateResponse("register.html", {"request": request, "body_class": "bg-light"})
 
 @router.get("/admin/create-dossier-no-numeriser", response_class=HTMLResponse)
@@ -178,6 +196,7 @@ def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),a
     if not admin_user:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit de creer un utilisateur")
     return templates.TemplateResponse("create_dossier_manquant.html", {"request": request, "body_class": "bg-light"})
+
 
 
 
@@ -206,19 +225,86 @@ async def create_dossier_no_numeriser(request:Request,
         db.refresh(new_dossier)
         return templates.TemplateResponse(
             "create_dossier_manquant.html",
-            {"request": request, "success_message": f"Vous avez ajouter avec succés le dossier manquant de : {fullname}!"}
+            {"request": request, "success_message": f"Le dossier manquant de {fullname} a été ajouté avec succès !"}
         )
     except IntegrityError as e:
             db.rollback()
             if "ix_agents_nni" in str(e.orig) or "ix_agents_title_number" in str(e.orig):
-                error_message = "Un enregistrement avec ce NNI ou ce Numéro de titre existe déjà. Veuillez vérifier les données et réessayer."
+                error_message = "Un enregistrement avec ce NNI ou ce numéro de titre existe déjà. Merci de vérifier les informations et de réessayer."
             else:
                 error_message = "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
  
     return templates.TemplateResponse(
-            "create_agent.html",
+            "create_dossier_manquant.html",
             {"request": request, "error_message": error_message, "form_data": form_data}
         )
+
+
+
+#================================================================
+@router.get("/admin/create-dossier-perdu", response_class=HTMLResponse)
+def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+    return templates.TemplateResponse("create_dossier_perdu.html", {"request": request, "body_class": "bg-light"})
+
+#================================================================
+
+
+
+
+#================================================================
+
+@router.post('/admin/create-dossier-perdu',status_code=status.HTTP_201_CREATED, response_model=List[schemas.DossierPerduResponse])
+async def create_dossier_perdu(request:Request, 
+                 title_number:str=Form(...),
+                 fullname:str=Form(...),
+                 category:str=Form(...),
+                 folder:str=Form(...),
+                 db:Session=Depends(get_db),
+                 auth:str=Depends(verify_session)):
+    
+    admin_user = db.query(models.User).filter(models.User.email == auth).first()
+    try:
+        form_data = await request.form()
+        error_message = None
+        if not admin_user:
+            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs accrédités uniquement.")
+        
+        new_dossier = models.DossierPerdu(
+            title_number=title_number,
+            fullname=fullname,
+            category=category,
+            folder=folder
+        )
+        db.add(new_dossier)
+        db.commit()
+        db.refresh(new_dossier)
+        return templates.TemplateResponse(
+            "create_dossier_perdu.html",
+            {"request": request, "success_message": f"Le dossier égaré de {fullname} a été ajouté avec succès !"}
+        )
+    except IntegrityError as e:
+            db.rollback()
+            if "ix_agents_nni" in str(e.orig) or "ix_agents_title_number" in str(e.orig):
+                error_message = "Un enregistrement avec ce NNI ou ce numéro de titre existe déjà. Merci de vérifier les informations et de réessayer."
+            else:
+                error_message = "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
+ 
+    return templates.TemplateResponse(
+            "create_dossier_perdu.html",
+            {"request": request, "error_message": error_message, "form_data": form_data}
+        )
+
+
+
+
+
+
+
+#================================================================
 
 @router.post('/admin/create-user', status_code=status.HTTP_201_CREATED, response_model=List[schemas.UserResponse])
 async def create_user(request:Request,
