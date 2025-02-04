@@ -457,6 +457,27 @@ async def delete_agent(request:Request,agent_id: int, db: Session = Depends(get_
     return {"message": "Suppression de l'agent avec succés."}
 
 
+#============================================================================
+
+@router.delete("/admin/delete-perdu/{agent_id}", status_code=status.HTTP_200_OK)
+async def delete_perdu(request:Request,agent_id: int, db: Session = Depends(get_db),auth:str=Depends(verify_session)):
+
+
+    admin_user = db.query(models.User).filter(models.User.email == auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user or admin_user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    dossier = db.query(models.DossierPerdu).filter(models.DossierPerdu.id == agent_id).first()
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Cet agent n'existe pas.")
+    db.delete(dossier)
+    db.commit()
+    return {"message": "Suppression de l'agent avec succés."}
+
+
+#============================================================================
+
+
 @router.delete("/admin/delete-user/{user_id}", status_code=status.HTTP_200_OK)
 def delete_user(request:Request, user_id:int, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
 
@@ -498,6 +519,31 @@ async def get_agent(request:Request,agent_id: int, db: Session = Depends(get_db)
         # "document": agent.document_path.replace("\\", "/")  # Replace backslashes with forward slashes for correct file path in browser.
         
     }
+
+
+
+#============================================================================
+@router.get("/admin/get-dossier-perdu/{agent_id}")
+async def get_perdu(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str=Depends(verify_session)):
+    # Fetch the user from the database based on the username
+    user = db.query(models.User).filter(models.User.email == auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not user or user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    dossier = db.query(models.DossierPerdu).filter(models.DossierPerdu.id == agent_id).first()
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Agent introuvable.")
+    return {
+        "id": dossier.id,
+        "title_number": dossier.title_number,
+        "fullname": dossier.fullname,
+        "category": dossier.category,
+        "folder": dossier.folder,
+        
+    }
+
+
+#============================================================================
 
 @router.get("/admin/categories-data")
 def get_categories_data(request:Request,db:Session=Depends(get_db), auth:str=Depends(verify_session)):
@@ -656,6 +702,56 @@ async def edit_agent(
             status_code=500,
             detail=f"Nous ne pouvons pas modifier cet agent. Contacter l'administrateur. {str(e)}"
         )
+    
+
+
+
+
+
+
+
+
+#================================================================
+@router.put("/admin/edit-perdu/{perdu_id}")
+async def edit_perdu(
+    request: Request,
+    perdu_id: int,
+    title_number: Optional[str] = Form(None),
+    fullname: Optional[str] = Form(None),
+    category: Optional[str] = Form(None),
+    folder: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+    auth: str = Depends(verify_session),
+):
+    try:
+        admin_user = db.query(models.User).filter(models.User.email == auth).first()
+
+        if not admin_user or admin_user.role != 'admin':
+            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+
+        dossier = db.query(models.DossierPerdu).filter(models.DossierPerdu.id == perdu_id).first()
+        if not dossier:
+            raise HTTPException(status_code=404, detail="Agent inexistant.")
+
+        # Update agent details
+        dossier.title_number = title_number
+        dossier.fullname = fullname
+        dossier.category = category
+        dossier.folder = folder
+
+        db.commit()
+        db.refresh(dossier)
+        return {"message": "Mise à jour correcte!"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Nous ne pouvons pas modifier cet agent. Contacter l'administrateur. {str(e)}"
+        )
+
+
+#================================================================
 
 
 

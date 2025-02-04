@@ -27,7 +27,7 @@
                             {%for column in data["columns"]%}
                                 <th>{{column}}</th>
                             {% endfor %}
-                            <!-- <th class="{% if role != 'admin' %}hidden{% endif %}">action</th> -->
+                            <th>action</th>
                             
                             </tr>
                         </thead>
@@ -44,10 +44,21 @@
                                             {{cell}}
                                     
                                         </td>
-                    
                                     {% endfor %}
+
+                                    <td style="text-align: center; width: 100px;" {% if role != 'admin' %} style="display:none;" {% endif %}>
+                                        <button class="btn btn-danger btn-sm table-action-btn delete-user-btn" data-user-id="{{ row[0] }}" onclick="openDeletePerduModal({{ row[0] }})">
+                                            Supprimer
+                                        </button>
+                                        <button class="btn btn-primary btn-sm table-action-btn" data-user-id="{{ row[0] }}" onclick="openEditPerduModal({{ row[0] }})">
+                                            Modifier
+                                        </button>
+
+                                    </td>
+                                   
                                   
                                 </tr>
+                             
 
                             {% endfor %}
                         </tbody>
@@ -55,6 +66,65 @@
                 </div>
             </div>
         </div>
+
+
+
+
+            <!-- Edit Modal -->
+<div class="modal fade" id="editPerduModal" tabindex="-1" aria-labelledby="editPerduModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPerduModalLabel">Modifier le fichier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editPerduForm" enctype="multipart/form-data">
+                    <input type="hidden" id="editPerduId" name="id">
+                    <div class="mb-3">
+                        <label for="editPerduFullname" class="form-label">Nom Complet</label>
+                        <input type="text" class="form-control" id="editPerduFullname" name="fullname">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPerduTitleNumber" class="form-label">Numero de Titre</label>
+                        <input type="text" class="form-control" id="editPerduTitleNumber" name="title_number">
+                    </div>
+               
+                    <div class="mb-3">
+                        <label for="editPerduCategory" class="form-label">Catégorie</label>
+                        <input type="text" class="form-control" id="editPerduCategory" name="category">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPerduFolder" class="form-label">Dossier Numero</label>
+                        <input type="text" class="form-control" id="editPerduFolder" name="folder">
+                    </div>
+                   
+                    <button type="submit" class="btn btn-primary">Sauvegarder les changements</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+        
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deletePerduModal" tabindex="-1" aria-labelledby="deletePerduModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deletePerduModalLabel">Confirmer la suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Êtes-vous sûr de vouloir supprimer cet agent ? Cette action est irréversible.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="confirmPerduButton">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     </main>
 

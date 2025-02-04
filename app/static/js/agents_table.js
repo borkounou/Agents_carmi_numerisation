@@ -23,8 +23,8 @@
                     alert("Error: " + (error.detail || "Impossible de supprimer cet agent. Contacter le service d'assistance."));
                 }
             } catch (error) {
-                console.error("Error deleting agent:", error);
-                alert("An unexpected error occurred.");
+                console.error("Erreur de suppression de l'agent:", error);
+                alert("Une erreur inattendue s'est produite.");
             } finally {
                 agentIdToDelete = null; // Reset the agent ID
                 bootstrap.Modal.getInstance(document.getElementById("deleteAgentModal")).hide();
