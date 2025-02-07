@@ -12,45 +12,52 @@
                 <li class="breadcrumb-item active"><strong>La solution numérique pour la gestion et l'archivage des dossiers des agents de CARMI.</strong></li>
             </ol>
 
-            <!-- Cards Section -->
-            <div class="row animate__animated animate__fadeInUp">
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-primary text-white mb-4 shadow-sm">
-                        <div class="card-body">Nombre Total de Dossiers numerisés: <strong>{{ total_agents }}</strong></div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">Voir en détail</a>
-                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-warning text-white mb-4 shadow-sm">
-                        <div class="card-body">Nombre Total de Dossiers manquants: <strong>{{ total_manquant }}</strong></div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">Voir en Détail</a>
-                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-success text-white mb-4 shadow-sm">
-                        <div class="card-body">Nombre Total de Dossiers égarés: <strong>{{ total_perdu }}</strong></div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">Voir en Détail</a>
-                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-danger text-white mb-4 shadow-sm">
-                        <div class="card-body">Pension</div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">Voir en Détail</a>
-                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                        </div>
-                    </div>
-                </div>
+          <!-- Cards Section -->
+<div class="row animate__animated animate__fadeInUp">
+    <!-- Card 1: Total Dossiers Numerisés -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card text-white mb-4 shadow-sm" style="background-color: #4e73df;">
+            <div class="card-body">Nombre Total de Dossiers numerisés: <strong>{{ total_agents }}</strong></div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a class="small text-white stretched-link" href="#">Voir en détail</a>
+                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Total Dossiers Manquants -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card text-white mb-4 shadow-sm" style="background-color: #f6c23e;">
+            <div class="card-body">Nombre Total de Dossiers manquants: <strong>{{ total_manquant }}</strong></div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a class="small text-white stretched-link" href="#">Voir en Détail</a>
+                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Total Dossiers Égarés -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card text-white mb-4 shadow-sm" style="background-color: #1cc88a;">
+            <div class="card-body">Nombre Total de Dossiers égarés: <strong>{{ total_perdu }}</strong></div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a class="small text-white stretched-link" href="#">Voir en Détail</a>
+                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Pension -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card text-white mb-4 shadow-sm" style="background-color: #e74a3b;">
+            <div class="card-body">Pension</div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a class="small text-white stretched-link" href="#">Voir en Détail</a>
+                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
 
             <!-- Charts Section -->
             <div class="row animate__animated animate__fadeInUp">
