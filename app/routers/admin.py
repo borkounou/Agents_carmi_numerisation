@@ -88,10 +88,12 @@ def index(request:Request,db:Session = Depends(get_db),
 
         query = text("SELECT COUNT(*) FROM agents;")
         query_manquant = text("SELECT COUNT(*) FROM dossiers_non_numerise;")
+        query_perdu =  text("SELECT COUNT(*) FROM dossier_perdu;") 
         total_agents = db.execute(query).scalar()
         total_non_numerise = db.execute(query_manquant).scalar()
+        total_perdu = db.execute(query_perdu).scalar()
         
-        return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role, "total_agents":total_agents, "total_manquant":total_non_numerise})
+        return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role, "total_agents":total_agents, "total_manquant":total_non_numerise, "total_perdu":total_perdu})
     except SQLAlchemyError as e:
     
         raise HTTPException(status_code=500, detail="Une erreur produite dans la base des données.")
@@ -389,6 +391,16 @@ async def create_agent(request:Request,
         if not admin_user:
             raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
 
+
+        dossier_no_numeriser= db.query(models.DossierNoNumeriser).filter(models.DossierNoNumeriser.title_number==title_number).first()
+        dossier_perdu = db.query(models.DossierPerdu).filter(models.DossierPerdu.title_number==title_number).first()
+        if dossier_no_numeriser:
+            error_message = f"L'agent avec Numéro de titre {title_number} existe déjà dans Dossier non numerisé."
+            return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message})
+        
+        if dossier_perdu:
+            error_message = f"L'agent avec Numéro de titre {title_number} existe déjà dans Dossier égaré ou perdu."
+            return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message})
         form_data = await request.form()
         error_message = None
         file_path = f"{UPLOAD_DIR}/{document.filename}"#Path(UPLOAD_DIR) /document.filename
@@ -405,7 +417,7 @@ async def create_agent(request:Request,
 
         else:
            
-            profile_image_path = f"{UPLOAD_PROFILE}/profile_default.png"#Path(UPLOAD_PROFILE)+"/profile_default.png"
+            profile_image_path = f"{UPLOAD_PROFILE}/profile_default.png"
         
         new_agent = models.Agent(
                 nni=nni, 
