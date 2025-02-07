@@ -9,7 +9,6 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pathlib import Path
 from typing import List, Optional
-from config.connection import get_db
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import models.models as models
 import schemas.schemas as schemas
@@ -35,23 +34,13 @@ os.makedirs(UPLOAD_PROFILE, exist_ok=True)
 
 
 
-#======Root entry
 @router.get("/")
 def root():
     return RedirectResponse("/login")
-
-
-# ===== Login entry =================================
 @router.get("/login", response_class=HTMLResponse)
 def login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request, "body_class": "bg-light"})
 
-
-@router.get("/logout")
-def logout():
-    response = RedirectResponse("/login", status_code=303)
-    response.delete_cookie(key="username")
-    return response
 
 @router.post("/login")
 def login_user(request: Request, email:str=Form(...), password:str=Form(...), db:Session=Depends(get_db)):
@@ -70,6 +59,11 @@ def login_user(request: Request, email:str=Form(...), password:str=Form(...), db
     return response
 
 
+@router.get("/logout")
+def logout():
+    response = RedirectResponse("/login", status_code=303)
+    response.delete_cookie(key="username")
+    return response
 
 @router.get('/admin', response_class=HTMLResponse)
 def index(request:Request,db:Session = Depends(get_db), 
@@ -139,6 +133,7 @@ def get_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth
     return templates.TemplateResponse("dossier_manquant.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
 
 
+#================================================================
 
 @router.get("/admin/dossier-perdu", response_class=HTMLResponse)
 def get_dossier_perdu(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
@@ -154,7 +149,7 @@ def get_dossier_perdu(request: Request, db:Session = Depends(get_db),auth:str=De
 
     return templates.TemplateResponse("dossier_perdu.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
 
-
+#================================================================
 
 
 @router.get("/admin/agents-table", response_class=HTMLResponse)
@@ -194,9 +189,6 @@ def register(request: Request, db:Session = Depends(get_db),auth:str=Depends(ver
         raise HTTPException(status_code=403, detail="Accès interdit : Cette action est réservée aux administrateurs. Vous n'êtes pas autorisé à créer un utilisateur.")
     return templates.TemplateResponse("register.html", {"request": request, "body_class": "bg-light"})
 
-
-# ============================Get Dossier no numerisé===============
-
 @router.get("/admin/create-dossier-no-numeriser", response_class=HTMLResponse)
 def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
     admin_user = db.query(models.User).filter(models.User.email== auth).first()
@@ -206,203 +198,6 @@ def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),a
     return templates.TemplateResponse("create_dossier_manquant.html", {"request": request, "body_class": "bg-light"})
 
 
-
-
-#================================================================
-@router.get("/admin/create-dossier-perdu", response_class=HTMLResponse)
-def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
-    admin_user = db.query(models.User).filter(models.User.email== auth).first()
-    # Check if the user exists and if their role is 'admin'
-    if not admin_user:
-        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit de creer un utilisateur")
-    return templates.TemplateResponse("create_dossier_perdu.html", {"request": request, "body_class": "bg-light"})
-
-
-
-# Edit Agent section
-
-@router.get("/admin/get-agent/{agent_id}")
-async def get_agent(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str=Depends(verify_session)):
-    # Fetch the user from the database based on the username
-    user = db.query(models.User).filter(models.User.email == auth).first()
-    # Check if the user exists and if their role is 'admin'
-    if not user or user.role != 'admin':
-        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
-    agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
-    if not agent:
-        raise HTTPException(status_code=404, detail="Agent introuvable.")
-    return {
-        "id": agent.id,
-        "nni": agent.nni,
-        "title_number": agent.title_number,
-        "fullname": agent.fullname,
-        "date_of_birth": agent.date_of_birth,
-        "birth_place": agent.birth_place,
-        "category": agent.category,
-        "address": agent.address,
-        "telephone": agent.telephone,
-        # "document": agent.document_path.replace("\\", "/")  # Replace backslashes with forward slashes for correct file path in browser.
-        
-    }
-
-
-
-#============================================================================
-@router.get("/admin/get-dossier-perdu/{agent_id}")
-async def get_perdu(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str=Depends(verify_session)):
-    # Fetch the user from the database based on the username
-    user = db.query(models.User).filter(models.User.email == auth).first()
-    # Check if the user exists and if their role is 'admin'
-    if not user or user.role != 'admin':
-        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
-    dossier = db.query(models.DossierPerdu).filter(models.DossierPerdu.id == agent_id).first()
-    if not dossier:
-        raise HTTPException(status_code=404, detail="Agent introuvable.")
-    return {
-        "id": dossier.id,
-        "title_number": dossier.title_number,
-        "fullname": dossier.fullname,
-        "category": dossier.category,
-        "folder": dossier.folder,
-        
-    }
-
-
-#============================================================================
-
-@router.get("/admin/categories-data")
-def get_categories_data(request:Request,db:Session=Depends(get_db), auth:str=Depends(verify_session)):
-    query = text("""
-        SELECT 
-            category, COUNT(*) AS count 
-        FROM 
-            agents 
-        GROUP BY 
-            category;
-    """)
-    result = db.execute(query).fetchall()
-    
-    data = [{"category": row[0], "count": row[1]} for row in result]
-    return {"data": data}
-
-
-@router.get("/admin/categories-birth-data")
-def get_categories_birth_data(db: Session = Depends(get_db)):
-    query = text("""
-        SELECT 
-            category, 
-            EXTRACT(YEAR FROM date_of_birth) AS birth_year,
-            COUNT(*) AS count 
-        FROM 
-            agents 
-        GROUP BY 
-            category, birth_year;
-    """)
-    result = db.execute(query).fetchall()
-    data = {}
-    for row in result:
-        category, birth_year, count = row
-        if category not in data:
-            data[category] = {}
-        data[category][birth_year] = count
-    return {"data": data}
-
-
-@router.get("/admin/detail-agent/{agent_id}", response_class=HTMLResponse)
-async def agent_details(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str =Depends(verify_session)):
-    try:
-      
-        admin_user = db.query(models.User).filter(models.User.email == auth).first()
-        agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
-        
-        if not admin_user or admin_user.role != 'admin':
-            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
-
-        if not agent:
-            raise HTTPException(status_code=404, detail="Cet agent n'existe pas dans la base de données.")
-        agent_data =  {
-            "id": agent.id,
-            "nni": agent.nni,
-            "title_number": agent.title_number,
-            "fullname": agent.fullname,
-            "date_of_birth": agent.date_of_birth,
-            "birth_place": agent.birth_place,
-            "category": agent.category,
-            "address": agent.address,
-            "telephone": agent.telephone,
-            "document": agent.document_path.replace("\\", "/"),# Replace backslashes with forward slashes for correct file path in browser.
-            "profile":agent.profile_path#.replace("\\", "/"),# Replace backslashes with forward slashes
-            
-        }
-
-        return templates.TemplateResponse("agent_details.html", {"request": request, "agent": agent_data})
-    
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, 
-            detail=str(e)
-        )
-
-
-
-
-@router.get("/password", response_class=HTMLResponse)
-def password(request: Request):
-    return templates.TemplateResponse("password.html", {"request": request, "body_class": "bg-primary"})
-
-@router.get("/charts", response_class=HTMLResponse)
-def charts(request: Request):
-    return templates.TemplateResponse("charts.html", {"request": request, "body_class": "sb-nav-fixed"})
-
-
-
-
-
-@router.get("/admin/register-agent", response_class=HTMLResponse)
-def register_agent(request: Request, db: Session = Depends(get_db),auth:str=Depends(verify_session)):
-    user = db.query(models.User).filter(models.User.email == auth).first()
-    # Check if the user exists and if their role is 'admin'
-    if not user:
-        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
-    return templates.TemplateResponse("create_agent.html",{"request":request, "body_class": "sb-nav-fixed", "role": user.role, "username": user.username})
-
-
-@router.get("/light-nav", response_class=HTMLResponse)
-async def light_nav(request: Request):
-    return templates.TemplateResponse("layout-sidenav-light", {"request": request, "body_class": "sb-nav-fixed"})
-
-
-
-
-
-
-
-@router.get("/layoutstatic", response_class=HTMLResponse)
-async def layoutstatic(request: Request):
-    return templates.TemplateResponse("layout-static.html", {"request": request, "body_class": ""})
-
-
-
-
-@router.get("/401", response_class=HTMLResponse)
-async def layout_error_401(request: Request):
-    return templates.TemplateResponse("401.html", {"request": request, "body_class": ""})
-
-@router.get("/404", response_class=HTMLResponse)
-async def layout_error_404(request: Request):
-    return templates.TemplateResponse("404.html", {"request": request, "body_class": ""})
-
-@router.get("/500", response_class=HTMLResponse)
-async def layout_error_500(request: Request):
-    return templates.TemplateResponse("500.html", {"request": request, "body_class": ""})
-
-
-@router.get('/{id}', response_model=schemas.UserCreate, status_code=status.HTTP_200_OK)
-def get_one_user(id:int, db:Session =Depends(get_db)):
-    id_user= db.query(models.User).filter(models.User.id==id).first()
-    if id_user is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"The user id:{id} you requested for does not exist")
-    return id_user
 
 
 @router.post('/admin/create-dossier-no-numeriser',status_code=status.HTTP_201_CREATED, response_model=List[schemas.DossierNoNumeriserResponse])
@@ -446,6 +241,21 @@ async def create_dossier_no_numeriser(request:Request,
 
 
 
+#================================================================
+@router.get("/admin/create-dossier-perdu", response_class=HTMLResponse)
+def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+    return templates.TemplateResponse("create_dossier_perdu.html", {"request": request, "body_class": "bg-light"})
+
+#================================================================
+
+
+
+
+#================================================================
 
 @router.post('/admin/create-dossier-perdu',status_code=status.HTTP_201_CREATED, response_model=List[schemas.DossierPerduResponse])
 async def create_dossier_perdu(request:Request, 
@@ -694,7 +504,150 @@ def delete_user(request:Request, user_id:int, db:Session = Depends(get_db),auth:
 
 
 
+# Edit Agent section
 
+@router.get("/admin/get-agent/{agent_id}")
+async def get_agent(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str=Depends(verify_session)):
+    # Fetch the user from the database based on the username
+    user = db.query(models.User).filter(models.User.email == auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not user or user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent introuvable.")
+    return {
+        "id": agent.id,
+        "nni": agent.nni,
+        "title_number": agent.title_number,
+        "fullname": agent.fullname,
+        "date_of_birth": agent.date_of_birth,
+        "birth_place": agent.birth_place,
+        "category": agent.category,
+        "address": agent.address,
+        "telephone": agent.telephone,
+        # "document": agent.document_path.replace("\\", "/")  # Replace backslashes with forward slashes for correct file path in browser.
+        
+    }
+
+
+
+#============================================================================
+@router.get("/admin/get-dossier-perdu/{agent_id}")
+async def get_perdu(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str=Depends(verify_session)):
+    # Fetch the user from the database based on the username
+    user = db.query(models.User).filter(models.User.email == auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not user or user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    dossier = db.query(models.DossierPerdu).filter(models.DossierPerdu.id == agent_id).first()
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Agent introuvable.")
+    return {
+        "id": dossier.id,
+        "title_number": dossier.title_number,
+        "fullname": dossier.fullname,
+        "category": dossier.category,
+        "folder": dossier.folder,
+        
+    }
+
+
+#============================================================================
+
+@router.get("/admin/categories-data")
+def get_categories_data(request:Request,db:Session=Depends(get_db), auth:str=Depends(verify_session)):
+    query = text("""
+        SELECT 
+            category, COUNT(*) AS count 
+        FROM 
+            agents 
+        GROUP BY 
+            category;
+    """)
+    result = db.execute(query).fetchall()
+    
+    data = [{"category": row[0], "count": row[1]} for row in result]
+    return {"data": data}
+
+
+@router.get("/admin/categories-birth-data")
+def get_categories_birth_data(db: Session = Depends(get_db)):
+    query = text("""
+        SELECT 
+            category, 
+            EXTRACT(YEAR FROM date_of_birth) AS birth_year,
+            COUNT(*) AS count 
+        FROM 
+            agents 
+        GROUP BY 
+            category, birth_year;
+    """)
+    result = db.execute(query).fetchall()
+    data = {}
+    for row in result:
+        category, birth_year, count = row
+        if category not in data:
+            data[category] = {}
+        data[category][birth_year] = count
+    return {"data": data}
+
+# @router.get("/admin/categories-birth-data")
+# def get_categories_birth_data(db: Session = Depends(get_db)):
+#     query = text("""
+#         SELECT 
+#             category, birth_place, COUNT(*) AS count 
+#         FROM 
+#             agents 
+#         GROUP BY 
+#             category, birth_place;
+#     """)
+#     result = db.execute(query).fetchall()
+#     data = {}
+#     for row in result:
+#         category, birth_place, count = row
+#         if category not in data:
+#             data[category] = {}
+#         data[category][birth_place] = count
+#     return {"data": data}
+
+
+
+
+@router.get("/admin/detail-agent/{agent_id}", response_class=HTMLResponse)
+async def agent_details(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str =Depends(verify_session)):
+    try:
+      
+        admin_user = db.query(models.User).filter(models.User.email == auth).first()
+        agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
+        
+        if not admin_user or admin_user.role != 'admin':
+            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+
+        if not agent:
+            raise HTTPException(status_code=404, detail="Cet agent n'existe pas dans la base de données.")
+        agent_data =  {
+            "id": agent.id,
+            "nni": agent.nni,
+            "title_number": agent.title_number,
+            "fullname": agent.fullname,
+            "date_of_birth": agent.date_of_birth,
+            "birth_place": agent.birth_place,
+            "category": agent.category,
+            "address": agent.address,
+            "telephone": agent.telephone,
+            "document": agent.document_path.replace("\\", "/"),# Replace backslashes with forward slashes for correct file path in browser.
+            "profile":agent.profile_path#.replace("\\", "/"),# Replace backslashes with forward slashes
+            
+        }
+
+        return templates.TemplateResponse("agent_details.html", {"request": request, "agent": agent_data})
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=str(e)
+        )
 
 
 
@@ -813,7 +766,63 @@ async def edit_perdu(
 
 
 
+@router.get("/password", response_class=HTMLResponse)
+def password(request: Request):
+    return templates.TemplateResponse("password.html", {"request": request, "body_class": "bg-primary"})
 
+@router.get("/charts", response_class=HTMLResponse)
+def charts(request: Request):
+    return templates.TemplateResponse("charts.html", {"request": request, "body_class": "sb-nav-fixed"})
+
+
+
+
+
+@router.get("/admin/register-agent", response_class=HTMLResponse)
+def register_agent(request: Request, db: Session = Depends(get_db),auth:str=Depends(verify_session)):
+    user = db.query(models.User).filter(models.User.email == auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    return templates.TemplateResponse("create_agent.html",{"request":request, "body_class": "sb-nav-fixed", "role": user.role, "username": user.username})
+
+
+@router.get("/light-nav", response_class=HTMLResponse)
+async def light_nav(request: Request):
+    return templates.TemplateResponse("layout-sidenav-light", {"request": request, "body_class": "sb-nav-fixed"})
+
+
+
+
+
+
+
+@router.get("/layoutstatic", response_class=HTMLResponse)
+async def layoutstatic(request: Request):
+    return templates.TemplateResponse("layout-static.html", {"request": request, "body_class": ""})
+
+
+
+
+@router.get("/401", response_class=HTMLResponse)
+async def layout_error_401(request: Request):
+    return templates.TemplateResponse("401.html", {"request": request, "body_class": ""})
+
+@router.get("/404", response_class=HTMLResponse)
+async def layout_error_404(request: Request):
+    return templates.TemplateResponse("404.html", {"request": request, "body_class": ""})
+
+@router.get("/500", response_class=HTMLResponse)
+async def layout_error_500(request: Request):
+    return templates.TemplateResponse("500.html", {"request": request, "body_class": ""})
+
+
+@router.get('/{id}', response_model=schemas.UserCreate, status_code=status.HTTP_200_OK)
+def get_one_user(id:int, db:Session =Depends(get_db)):
+    id_user= db.query(models.User).filter(models.User.id==id).first()
+    if id_user is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"The user id:{id} you requested for does not exist")
+    return id_user
 
 
 

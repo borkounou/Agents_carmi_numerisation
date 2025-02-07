@@ -1,39 +1,31 @@
-{%extends "base.html"%}
+{% extends "base.html" %}
 
-{% block head_title%}Dashboard - SB Admin{%endblock%}
+{% block head_title %}Dashboard - SB Admin{% endblock %}
 
-
-{%block content%}
+{% block content %}
 <div id="layoutSidenav_content">
     <main>
         <div class="container-fluid px-4">
-            
-            <h1 class="mt-4">ArchiCARMI</h1>
-            <ol class="breadcrumb mb-4">
+            <!-- Page Header -->
+            <h1 class="mt-4 animate__animated animate__fadeIn">ArchiCARMI</h1>
+            <ol class="breadcrumb mb-4 animate__animated animate__fadeIn">
                 <li class="breadcrumb-item active"><strong>La solution numérique pour la gestion et l'archivage des dossiers des agents de CARMI.</strong></li>
             </ol>
-            <div class="row">
+
+            <!-- Cards Section -->
+            <div class="row animate__animated animate__fadeInUp">
                 <div class="col-xl-3 col-md-6">
-                    <div class="card bg-primary text-white mb-4">
-                        <div class="card-body">Nombre Total de Dossiers numerisés: {{total_agents}}</div>
+                    <div class="card bg-primary text-white mb-4 shadow-sm">
+                        <div class="card-body">Nombre Total de Dossiers numerisés: <strong>{{ total_agents }}</strong></div>
                         <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">Voir en détail </a>
+                            <a class="small text-white stretched-link" href="#">Voir en détail</a>
                             <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                         </div>
                     </div>
                 </div>
                 <div class="col-xl-3 col-md-6">
-                    <div class="card bg-warning text-white mb-4">
-                        <div class="card-body">Nombre Total de Dossiers manquants:<strong>{{total_manquant}}</strong> </div>
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">Voir en Détail</a>
-                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card bg-success text-white mb-4">
-                        <div class="card-body">Nombre Total de Dossiers égarés :<strong>{{total_perdu}}</strong></div>
+                    <div class="card bg-warning text-white mb-4 shadow-sm">
+                        <div class="card-body">Nombre Total de Dossiers manquants: <strong>{{ total_manquant }}</strong></div>
                         <div class="card-footer d-flex align-items-center justify-content-between">
                             <a class="small text-white stretched-link" href="#">Voir en Détail</a>
                             <div class="small text-white"><i class="fas fa-angle-right"></i></div>
@@ -41,7 +33,16 @@
                     </div>
                 </div>
                 <div class="col-xl-3 col-md-6">
-                    <div class="card bg-danger text-white mb-4">
+                    <div class="card bg-success text-white mb-4 shadow-sm">
+                        <div class="card-body">Nombre Total de Dossiers égarés: <strong>{{ total_perdu }}</strong></div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">Voir en Détail</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-danger text-white mb-4 shadow-sm">
                         <div class="card-body">Pension</div>
                         <div class="card-footer d-flex align-items-center justify-content-between">
                             <a class="small text-white stretched-link" href="#">Voir en Détail</a>
@@ -50,10 +51,12 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
+
+            <!-- Charts Section -->
+            <div class="row animate__animated animate__fadeInUp">
                 <div class="col-xl-6">
-                    <div class="card mb-4">
-                        <div class="card-header">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-primary text-white">
                             <i class="fas fa-chart-area me-1"></i>
                             Dossiers numerisés par Catégorie
                         </div>
@@ -61,60 +64,58 @@
                     </div>
                 </div>
                 <div class="col-xl-6">
-                    <div class="card mb-4">
-                        <div class="card-header">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-primary text-white">
                             <i class="fas fa-chart-bar me-1"></i>
-                        Dossiers numerisés par Catégorie
+                            Dossiers numerisés par Catégorie
                         </div>
                         <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
                     </div>
                 </div>
             </div>
-            <div class="card mb-4">
-                <div class="card-header">
-                    
+
+            <!-- Agents Table Section -->
+            <div class="card mb-4 shadow-sm animate__animated animate__fadeInUp">
+                <div class="card-header bg-primary text-white">
                     <i class="fas fa-table me-1"></i>
                     Table des agents de la CARMI
                     <div class="d-flex align-items-center justify-content-end">
-                        <a class="btn btn-success btn-sm table-action-btn" href="{{https_url_for(request,'register_agent')}}"> Ajouter un agent</a>
+                        <a class="btn btn-success btn-sm table-action-btn" href="{{ https_url_for(request,'register_agent') }}">
+                            <i class="fas fa-plus me-1"></i>Ajouter un agent
+                        </a>
                     </div>
-                    
                 </div>
                 <div class="card-body">
-                    <table id="datatablesSimple">
+                    <table id="datatablesSimple" class="table table-hover">
                         <thead>
                             <tr>
-                            {%for column in data["columns"]%}
-                                <th>{{column}}</th>
-                            {% endfor %}
-                            <th>action</th>
+                                {% for column in data["columns"] %}
+                                    <th>{{ column }}</th>
+                                {% endfor %}
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tfoot>
-                            <tr id="tableFoot">
-                            </tr>
+                            <tr id="tableFoot"></tr>
                         </tfoot>
                         <tbody>
-                            {%for row in data["rows"]%}
+                            {% for row in data["rows"] %}
                                 <tr data-user-id="{{ row[0] }}" onclick="navAgentDetails(this)" style="cursor: pointer;">
-                                    {%for cell in row%}
-                                        <td >
-                                            {%if loop.index == 1%}
-
-                                            <a href="/admin/detail-agent/{{ row[0] }}" class="text-primary" style="text-decoration:none; cursor: pointer;">
-                                                {{cell}}
-                                            </a>
-                                            {%else%}
-                                            {{cell}}
+                                    {% for cell in row %}
+                                        <td>
+                                            {% if loop.index == 1 %}
+                                                <a href="/admin/detail-agent/{{ row[0] }}" class="text-primary" style="text-decoration: none; cursor: pointer;">
+                                                    {{ cell }}
+                                                </a>
+                                            {% else %}
+                                                {{ cell }}
                                             {% endif %}
                                         </td>
                                     {% endfor %}
                                     <td style="text-align: center; width: 100px;">
-                                      
                                         <button class="btn btn-info btn-sm table-action-btn" data-pdf-path="{{ row[8] }}" onclick="openViewModal('{{ row[8] }}')">
-                                            Voir
+                                            <i class="fas fa-eye me-1"></i>Voir
                                         </button>
-                            
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -124,14 +125,11 @@
             </div>
         </div>
 
-        {%include "pdfModal.html"%}
+        <!-- Include PDF Modal -->
+        {% include "pdfModal.html" %}
     </main>
 
-    {%include "footer.html"%}
-
+    <!-- Include Footer -->
+    {% include "footer.html" %}
 </div>
-
-{%endblock%}
-
-
-
+{% endblock %}

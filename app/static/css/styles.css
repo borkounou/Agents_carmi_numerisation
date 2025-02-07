@@ -93,9 +93,11 @@
 
 body {
   margin: 0;
-  font-family: var(--bs-body-font-family);
+  /* font-family: var(--bs-body-font-family); */
+  font-family: 'Roboto', sans-serif;
   font-size: var(--bs-body-font-size);
   font-weight: var(--bs-body-font-weight);
+ 
   line-height: var(--bs-body-line-height);
   color: var(--bs-body-color);
   text-align: var(--bs-body-text-align);
@@ -113,7 +115,9 @@ hr {
 }
 
 h6, .h6, h5, .h5, h4, .h4, h3, .h3, h2, .h2, h1, .h1 {
+  font-family: 'Poppins', sans-serif;
   margin-top: 0;
+  /* color: #2c3e50; */
   margin-bottom: 0.5rem;
   font-weight: 500;
   line-height: 1.2;
@@ -10930,7 +10934,8 @@ body {
   overflow-y: auto;
 }
 .sb-nav-fixed #layoutSidenav #layoutSidenav_content {
-  padding-left: 225px;
+  padding-left: 7rem;
+  margin-left: 0.1rem;
   top: 56px;
 }
 
@@ -11328,4 +11333,155 @@ body {
   background-color: #d4edda;
   border-color: #c3e6cb;
   color: #155724;
+}
+
+
+
+
+/* Custom CSS for Enhanced Styling */
+.navbar-brand {
+  transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover {
+  transform: scale(1.05);
+}
+
+.sb-sidenav-dark {
+  background: #343a40;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sb-sidenav-dark .nav-link {
+  color: #adb5bd;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.sb-sidenav-dark .nav-link:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.btn-primary {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  transform: translateY(-2px);
+}
+
+
+
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.btn-success, .btn-info {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-success:hover, .btn-info:hover {
+  transform: translateY(-2px);
+}
+
+.card-header {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.table-action-btn {
+  padding: 5px 10px;
+  font-size: 0.9rem;
+}
+
+
+.card-header {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.card-img-top {
+  transition: transform 0.3s ease;
+}
+
+.card-img-top:hover {
+  transform: scale(1.05);
+}
+
+.rounded-circle {
+  border: 3px solid #0d6efd;
+}
+
+.iframe-container {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+
+
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.btn-success, .btn-info, .btn-primary, .btn-danger {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-success:hover, .btn-info:hover, .btn-primary:hover, .btn-danger:hover {
+  transform: translateY(-2px);
+}
+
+.card-header {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.table-action-btn {
+  padding: 5px 8px;
+  font-size: 0.60rem;
+}
+
+.modal-header {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+
+
+/* Custom CSS for Button Layout */
+.d-flex.flex-wrap.gap-2 {
+  gap: 0.5rem; /* Adjust the gap between buttons */
+}
+
+.table-action-btn {
+  white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+
+
+
+/* Custom CSS for Enhanced Styling */
+.img-login {
+  border: 3px solid #0d6efd;
+  transition: transform 0.3s ease;
+}
+
+.img-login:hover {
+  transform: scale(1.05);
 }
