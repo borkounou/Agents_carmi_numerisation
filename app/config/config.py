@@ -105,6 +105,6 @@ def get_csrf_token(request:Request):
 def https_url_for(request:Request, name:str, **path_params:any)->str:
     http_url = request.url_for(name, **path_params)
     https_url = str(http_url).replace("http", "https",1)
-    return https_url
+    return http_url
 
 
