@@ -9,9 +9,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.middleware.gzip import GZipMiddleware
 app = FastAPI()
-
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.mount("/static", StaticFiles(directory='./static'), name="static")
 app.mount("/uploaded_files", StaticFiles(directory="uploaded_files"), name="uploaded_files")
 app.mount("/profiles", StaticFiles(directory="profiles"), name="profiles")

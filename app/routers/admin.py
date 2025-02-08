@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from starlette import status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
-from pathlib import Path
 from typing import List, Optional
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import models.models as models
