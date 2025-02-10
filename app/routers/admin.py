@@ -591,27 +591,6 @@ def get_categories_birth_data(db: Session = Depends(get_db)):
         data[category][birth_year] = count
     return {"data": data}
 
-# @router.get("/admin/categories-birth-data")
-# def get_categories_birth_data(db: Session = Depends(get_db)):
-#     query = text("""
-#         SELECT 
-#             category, birth_place, COUNT(*) AS count 
-#         FROM 
-#             agents 
-#         GROUP BY 
-#             category, birth_place;
-#     """)
-#     result = db.execute(query).fetchall()
-#     data = {}
-#     for row in result:
-#         category, birth_place, count = row
-#         if category not in data:
-#             data[category] = {}
-#         data[category][birth_place] = count
-#     return {"data": data}
-
-
-
 
 @router.get("/admin/detail-agent/{agent_id}", response_class=HTMLResponse)
 async def agent_details(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str =Depends(verify_session)):

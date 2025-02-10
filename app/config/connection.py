@@ -18,8 +18,6 @@ Base.metadata.create_all(bind=engine)
 
 session = sessionmaker(bind=engine, autoflush=True)
 
-
-
 def get_db():
     db_session = session()
     try:
