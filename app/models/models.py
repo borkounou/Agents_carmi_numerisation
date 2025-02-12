@@ -31,7 +31,7 @@ class Agent(Base):
     fullname = Column(String, nullable=False, index=True)
     date_of_birth = Column(Date, nullable=False)
     birth_place = Column(String, nullable=False)
-    category = Column(String, default="Agent Militaire")
+    category = Column(String,nullable=False, index=True)
     address = Column(String, default="")
     document_path = Column(String, nullable=False)  
     profile_path= Column(String, default="profiles/profile_default.png", nullable=True)

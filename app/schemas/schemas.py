@@ -56,7 +56,7 @@ class AgentBase(BaseModel):
     nni:int
     title_number:str
     fullname:str
-    category:Optional[str] = "Agent Militaire"
+    category:str
     date_of_birth:datetime.date
     birth_place:str
     telephone:str

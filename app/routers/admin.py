@@ -125,7 +125,7 @@ def get_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit 😊😊")
     dossiers = db.query(models.DossierNoNumeriser).all()
     data = {
-        "columns": ["ID", "NUMERO DE TITRE", "Fullname", "Categorie"],  # Adjust based on your User model
+        "columns": ["ID", "NUMERO DE TITRE", "Nom complet", "Categorie"],  # Adjust based on your User model
         "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category] for dossier in dossiers]
     }
 
@@ -147,6 +147,24 @@ def get_dossier_perdu(request: Request, db:Session = Depends(get_db),auth:str=De
     }
 
     return templates.TemplateResponse("dossier_perdu.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
+
+
+
+
+@router.get("/admin/dossier-manquant", response_class=HTMLResponse)
+def get_dossier_manquant(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit 😊😊")
+    dossiers = db.query(models.DossierNoNumeriser).all()
+    data = {
+        "columns": ["ID", "NUMERO DE TITRE", "Nom Complet", "Categorie","Dossier Numero"],  # Adjust based on your User model
+        "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category, dossier.folder] for dossier in dossiers]
+    }
+
+    return templates.TemplateResponse("dossier_manquant.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
+
 
 #================================================================
 
@@ -484,6 +502,22 @@ async def delete_perdu(request:Request,agent_id: int, db: Session = Depends(get_
     return {"message": "Suppression de l'agent avec succés."}
 
 
+@router.delete("/admin/delete-manquant/{agent_id}", status_code=status.HTTP_200_OK)
+async def delete_manquant(request:Request,agent_id: int, db: Session = Depends(get_db),auth:str=Depends(verify_session)):
+
+
+    admin_user = db.query(models.User).filter(models.User.email == auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user or admin_user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    dossier = db.query(models.DossierNoNumeriser).filter(models.DossierNoNumeriser.id == agent_id).first()
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Cet agent n'existe pas.")
+    db.delete(dossier)
+    db.commit()
+    return {"message": "Suppression de l'agent avec succés."}
+
+
 #============================================================================
 
 
@@ -548,6 +582,27 @@ async def get_perdu(request:Request,agent_id: int, db: Session = Depends(get_db)
         "fullname": dossier.fullname,
         "category": dossier.category,
         "folder": dossier.folder,
+        
+    }
+
+
+
+@router.get("/admin/get-dossier-manquant/{agent_id}")
+async def get_manquant(request:Request,agent_id: int, db: Session = Depends(get_db), auth:str=Depends(verify_session)):
+    # Fetch the user from the database based on the username
+    user = db.query(models.User).filter(models.User.email == auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not user or user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    dossier = db.query(models.DossierNoNumeriser).filter(models.DossierNoNumeriser.id == agent_id).first()
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Agent introuvable.")
+    return {
+        "id": dossier.id,
+        "title_number": dossier.title_number,
+        "fullname": dossier.fullname,
+        "category": dossier.category,
+       
         
     }
 
@@ -726,6 +781,46 @@ async def edit_perdu(
         dossier.fullname = fullname
         dossier.category = category
         dossier.folder = folder
+
+        db.commit()
+        db.refresh(dossier)
+        return {"message": "Mise à jour correcte!"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Nous ne pouvons pas modifier cet agent. Contacter l'administrateur. {str(e)}"
+        )
+
+
+
+
+@router.put("/admin/edit-manquant/{manquant_id}")
+async def edit_manquant(
+    request: Request,
+    perdu_id: int,
+    title_number: Optional[str] = Form(None),
+    fullname: Optional[str] = Form(None),
+    category: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+    auth: str = Depends(verify_session),
+):
+    try:
+        admin_user = db.query(models.User).filter(models.User.email == auth).first()
+
+        if not admin_user or admin_user.role != 'admin':
+            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+
+        dossier = db.query(models.DossierNoNumeriser).filter(models.DossierNoNumeriser.id == perdu_id).first()
+        if not dossier:
+            raise HTTPException(status_code=404, detail="Agent inexistant.")
+
+        # Update agent details
+        dossier.title_number = title_number
+        dossier.fullname = fullname
+        dossier.category = category
+      
 
         db.commit()
         db.refresh(dossier)
