@@ -799,7 +799,7 @@ async def edit_perdu(
 @router.put("/admin/edit-manquant/{manquant_id}")
 async def edit_manquant(
     request: Request,
-    perdu_id: int,
+    manquant_id: int,
     title_number: Optional[str] = Form(None),
     fullname: Optional[str] = Form(None),
     category: Optional[str] = Form(None),
@@ -812,7 +812,7 @@ async def edit_manquant(
         if not admin_user or admin_user.role != 'admin':
             raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
 
-        dossier = db.query(models.DossierNoNumeriser).filter(models.DossierNoNumeriser.id == perdu_id).first()
+        dossier = db.query(models.DossierNoNumeriser).filter(models.DossierNoNumeriser.id == manquant_id).first()
         if not dossier:
             raise HTTPException(status_code=404, detail="Agent inexistant.")
 
