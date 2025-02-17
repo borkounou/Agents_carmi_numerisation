@@ -53,13 +53,33 @@ def login_user(request: Request, email:str=Form(...), password:str=Form(...), db
         user_agent=request.headers.get("user-agent"),
 
     )
+
+    log_entry = models.ActivityLog(
+        user_id=user.id,
+        action="LOGIN",
+        details=f"User logged in from IP {request.client.host}"
+        # ip=request.client.host,
+        # user_agent=request.headers.get("user-agent"),
+        # timestamp=datetime.datetime.now(),
+    )
+    db.add(log_entry)
+    db.commit()
     response = RedirectResponse("/admin", status_code=303)
     response.set_cookie(key="session_token", value=session_token, httponly=True, secure=False,samesite="strict")  # Set cookie for 1 hour
     return response
 
 
 @router.get("/logout")
-def logout():
+def logout(request:Request, db:Session=Depends(get_db), auth:str=Depends(verify_session)):
+    user = db.query(models.User).filter(models.User.email==auth).first()
+    log_entry = models.ActivityLog(
+        user_id=user.id,
+        action="logout",
+        details=f"User logged out",
+    )
+    db.add(log_entry)
+    db.commit()
+
     response = RedirectResponse("/login", status_code=303)
     response.delete_cookie(key="username")
     return response

@@ -3,6 +3,24 @@ from pydantic import BaseModel, Field
 import datetime
 
 
+class ActivityLogBase(BaseModel):
+    user_id:int
+    action:str 
+    details:str = None 
+    timestamp: datetime.datetime = None 
+
+
+class ActivityLogCreate(ActivityLogBase):
+    pass 
+
+
+class ActivityLogResponse(ActivityLogBase):
+    id:int
+    class Config:
+        from_attributes = True
+
+
+
 class DossierPerduBase(BaseModel):
     title_number:str
     fullname:str

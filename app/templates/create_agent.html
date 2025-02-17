@@ -26,54 +26,58 @@
 
                 <div class="card-body">
                     <form method="post" action="/admin/create-agent" enctype="multipart/form-data">
+                        <!-- Row 1: Title Number and NNI -->
                         <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-floating mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="form-floating">
                                     <input class="form-control" id="inputTitleNumber" type="text" placeholder="Entrer votre Numero de titre" name="title_number" value="MO" required />
                                     <label for="inputTitleNumber"><i class="fas fa-id-card me-2"></i>Numéro de titre</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating mb-3 mb-md-0">
+                                <div class="form-floating">
                                     <input class="form-control" id="inputNNI" type="text" placeholder="NNI" name="nni" required />
                                     <label for="inputNNI"><i class="fas fa-hashtag me-2"></i>NNI</label>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Row 2: Full Name and Date of Birth -->
                         <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-floating mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="form-floating">
                                     <input class="form-control" id="inputFullname" type="text" placeholder="Nom Complet" name="fullname" required />
                                     <label for="inputFullname"><i class="fas fa-user me-2"></i>Nom et Prénom</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating mb-3">
+                                <div class="form-floating">
                                     <input class="form-control" id="inputDateOfBirth" type="date" placeholder="Entrer votre date de naissance" name="date_of_birth" required />
                                     <label for="inputDateOfBirth"><i class="fas fa-calendar-alt me-2"></i>Date de Naissance</label>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Row 3: Place of Birth and Telephone -->
                         <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-floating mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="form-floating">
                                     <input class="form-control" id="inputPlaceOfBirth" type="text" placeholder="Entrer votre lieu de naissance" name="birth_place" required />
                                     <label for="inputPlaceOfBirth"><i class="fas fa-map-marker-alt me-2"></i>Lieu de Naissance</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating mb-3">
+                                <div class="form-floating">
                                     <input class="form-control" id="inputTelephone" type="text" placeholder="Entrer votre telephone" value="0000000000" name="telephone" required />
                                     <label for="inputTelephone"><i class="fas fa-phone me-2"></i>Téléphone</label>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Row 4: Category and Address -->
                         <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-floating mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="form-floating">
                                     <select class="form-control" id="inputCategory" name="category" required>
                                         <option value="Agent Militaire Ndjamena">Agent Militaire Ndjamena</option>
                                         <option value="Veuf(ve) Militaire Ndjamena">Veuf(ve) Militaire Ndjamena</option>
@@ -88,28 +92,30 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating mb-3">
+                                <div class="form-floating">
                                     <input class="form-control" id="inputAddress" type="text" placeholder="Entrer votre lieu de residence" name="address" value="Ndjamena Tchad" required />
                                     <label for="inputAddress"><i class="fas fa-home me-2"></i>Addresse de Residence</label>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Row 5: Profile Image and PDF Upload -->
                         <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-floating mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="form-floating">
                                     <input class="form-control" id="inputProfileImage" type="file" name="profile" accept="image/*" />
                                     <label for="inputProfileImage"><i class="fas fa-camera me-2"></i>Photo de Profil</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating mb-3">
+                                <div class="form-floating">
                                     <input class="form-control" id="inputPDF" type="file" name="document" accept=".pdf" required />
                                     <label for="inputPDF"><i class="fas fa-file-pdf me-2"></i>Ajouter un fichier PDF d'agent</label>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Submit Button -->
                         <div class="mt-4 mb-0">
                             <div class="d-grid">
                                 <button class="btn btn-primary btn-block" type="submit">
@@ -122,6 +128,7 @@
             </div>
         </div>
 
+        <!-- Footer -->
         <div class="col-lg-12">
             {% include "footer.html" %}
         </div>

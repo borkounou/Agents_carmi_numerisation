@@ -11520,3 +11520,126 @@ footer a {
 footer a:hover {
   color: #0056b3 !important; /* Darker shade on hover */
 }
+
+
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .navbar-brand {
+      font-size: 1.2rem;
+  }
+
+  .card-body {
+      padding: 1rem;
+  }
+
+  .card-footer {
+      padding: 0.75rem;
+  }
+
+  .table-action-btn {
+      padding: 3px 6px;
+      font-size: 0.75rem;
+  }
+
+  .card-header {
+      font-size: 1rem;
+  }
+
+  .breadcrumb {
+      font-size: 0.9rem;
+  }
+
+  .navbar-nav .dropdown-menu {
+      position: static;
+      float: none;
+  }
+
+  .sb-sidenav-dark .nav-link {
+      padding: 0.5rem 1rem;
+  }
+
+  .sb-sidenav-dark .sb-sidenav-menu-heading {
+      padding: 0.5rem 1rem;
+  }
+
+  .sb-sidenav-dark .sb-sidenav-footer {
+      padding: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar-brand {
+      font-size: 1rem;
+  }
+
+  .card-body {
+      padding: 0.75rem;
+  }
+
+  .card-footer {
+      padding: 0.5rem;
+  }
+
+  .table-action-btn {
+      padding: 2px 4px;
+      font-size: 0.7rem;
+  }
+
+  .card-header {
+      font-size: 0.9rem;
+  }
+
+  .breadcrumb {
+      font-size: 0.8rem;
+  }
+
+  .navbar-nav .dropdown-menu {
+      position: static;
+      float: none;
+  }
+
+  .sb-sidenav-dark .nav-link {
+      padding: 0.5rem 0.75rem;
+  }
+
+  .sb-sidenav-dark .sb-sidenav-menu-heading {
+      padding: 0.5rem 0.75rem;
+  }
+
+  .sb-sidenav-dark .sb-sidenav-footer {
+      padding: 0.5rem 0.75rem;
+  }
+}
+
+
+
+
+/* Responsive Form Styles */
+@media (max-width: 768px) {
+  .form-floating label {
+      font-size: 0.9rem; /* Adjust label font size for smaller screens */
+  }
+
+  .form-control {
+      font-size: 0.9rem; /* Adjust input font size for smaller screens */
+  }
+
+  .btn-block {
+      font-size: 0.9rem; /* Adjust button font size for smaller screens */
+  }
+}
+
+@media (max-width: 576px) {
+  .form-floating label {
+      font-size: 0.8rem; /* Further reduce label font size for very small screens */
+  }
+
+  .form-control {
+      font-size: 0.8rem; /* Further reduce input font size for very small screens */
+  }
+
+  .btn-block {
+      font-size: 0.8rem; /* Further reduce button font size for very small screens */
+  }
+}

@@ -12,57 +12,57 @@
                 <li class="breadcrumb-item active"><strong>La solution numérique pour la gestion et l'archivage des dossiers des agents de CARMI.</strong></li>
             </ol>
 
-          <!-- Cards Section -->
-<div class="row animate__animated animate__fadeInUp">
-    <!-- Card 1: Total Dossiers Numerisés -->
-    <div class="col-xl-3 col-md-6">
-        <div class="card text-white mb-4 shadow-sm" style="background-color: #4e73df;">
-            <div class="card-body">Nombre Total de Dossiers numerisés: <strong>{{ total_agents }}</strong></div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a class="small text-white stretched-link" href="#">Voir en détail</a>
-                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-            </div>
-        </div>
-    </div>
+            <!-- Cards Section -->
+            <div class="row animate__animated animate__fadeInUp">
+                <!-- Card 1: Total Dossiers Numerisés -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card text-white shadow-sm" style="background-color: #4e73df;">
+                        <div class="card-body">Nombre Total de Dossiers numerisés: <strong>{{ total_agents }}</strong></div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">Voir en détail</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Card 2: Total Dossiers Manquants -->
-    <div class="col-xl-3 col-md-6">
-        <div class="card text-white mb-4 shadow-sm" style="background-color: #f6c23e;">
-            <div class="card-body">Nombre Total de Dossiers manquants: <strong>{{ total_manquant }}</strong></div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a class="small text-white stretched-link" href="#">Voir en Détail</a>
-                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-            </div>
-        </div>
-    </div>
+                <!-- Card 2: Total Dossiers Manquants -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card text-white shadow-sm" style="background-color: #f6c23e;">
+                        <div class="card-body">Nombre Total de Dossiers manquants: <strong>{{ total_manquant }}</strong></div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">Voir en Détail</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Card 3: Total Dossiers Égarés -->
-    <div class="col-xl-3 col-md-6">
-        <div class="card text-white mb-4 shadow-sm" style="background-color: #1cc88a;">
-            <div class="card-body">Nombre Total de Dossiers égarés: <strong>{{ total_perdu }}</strong></div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a class="small text-white stretched-link" href="#">Voir en Détail</a>
-                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-            </div>
-        </div>
-    </div>
+                <!-- Card 3: Total Dossiers Égarés -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card text-white shadow-sm" style="background-color: #1cc88a;">
+                        <div class="card-body">Nombre Total de Dossiers égarés: <strong>{{ total_perdu }}</strong></div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">Voir en Détail</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Card 4: Pension -->
-    <div class="col-xl-3 col-md-6">
-        <div class="card text-white mb-4 shadow-sm" style="background-color: #e74a3b;">
-            <div class="card-body">Pension</div>
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                <a class="small text-white stretched-link" href="#">Voir en Détail</a>
-                <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                <!-- Card 4: Pension -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card text-white shadow-sm" style="background-color: #e74a3b;">
+                        <div class="card-body">Pension</div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">Voir en Détail</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
 
             <!-- Charts Section -->
             <div class="row animate__animated animate__fadeInUp">
-                <div class="col-xl-6">
-                    <div class="card mb-4 shadow-sm">
+                <div class="col-xl-6 mb-4">
+                    <div class="card shadow-sm">
                         <div class="card-header bg-primary text-white">
                             <i class="fas fa-chart-area me-1"></i>
                             Visualisation des dossiers numérisés par année de naissance
@@ -70,8 +70,8 @@
                         <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
                     </div>
                 </div>
-                <div class="col-xl-6">
-                    <div class="card mb-4 shadow-sm">
+                <div class="col-xl-6 mb-4">
+                    <div class="card shadow-sm">
                         <div class="card-header bg-primary text-white">
                             <i class="fas fa-chart-bar me-1"></i>
                             Dossiers numérisés répartis par catégorie
@@ -93,41 +93,43 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table id="datatablesSimple" class="table table-hover">
-                        <thead>
-                            <tr>
-                                {% for column in data["columns"] %}
-                                    <th>{{ column }}</th>
-                                {% endfor %}
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                            <tr id="tableFoot"></tr>
-                        </tfoot>
-                        <tbody>
-                            {% for row in data["rows"] %}
-                                <tr data-user-id="{{ row[0] }}" onclick="navAgentDetails(this)" style="cursor: pointer;">
-                                    {% for cell in row %}
-                                        <td>
-                                            {% if loop.index == 1 %}
-                                                <a href="/admin/detail-agent/{{ row[0] }}" class="text-primary" style="text-decoration: none; cursor: pointer;">
-                                                    {{ cell }}
-                                                </a>
-                                            {% else %}
-                                                {{ cell }}
-                                            {% endif %}
-                                        </td>
+                    <div class="table-responsive">
+                        <table id="datatablesSimple" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    {% for column in data["columns"] %}
+                                        <th>{{ column }}</th>
                                     {% endfor %}
-                                    <td style="text-align: center; width: 100px;">
-                                        <button class="btn btn-info btn-sm table-action-btn" data-pdf-path="{{ row[8] }}" onclick="openViewModal('{{ row[8] }}')">
-                                            <i class="fas fa-eye me-1"></i>Voir
-                                        </button>
-                                    </td>
+                                    <th>Action</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tfoot>
+                                <tr id="tableFoot"></tr>
+                            </tfoot>
+                            <tbody>
+                                {% for row in data["rows"] %}
+                                    <tr data-user-id="{{ row[0] }}" onclick="navAgentDetails(this)" style="cursor: pointer;">
+                                        {% for cell in row %}
+                                            <td>
+                                                {% if loop.index == 1 %}
+                                                    <a href="/admin/detail-agent/{{ row[0] }}" class="text-primary" style="text-decoration: none; cursor: pointer;">
+                                                        {{ cell }}
+                                                    </a>
+                                                {% else %}
+                                                    {{ cell }}
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                        <td style="text-align: center; width: 100px;">
+                                            <button class="btn btn-info btn-sm table-action-btn" data-pdf-path="{{ row[8] }}" onclick="openViewModal('{{ row[8] }}')">
+                                                <i class="fas fa-eye me-1"></i>Voir
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
