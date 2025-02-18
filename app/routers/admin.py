@@ -730,6 +730,14 @@ async def edit_agent(
         agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
         if not agent:
             raise HTTPException(status_code=404, detail="Agent inexistant.")
+        
+
+        log_entry = models.ActivityLog(
+            user_id = admin_user.id,
+            action = "Modifier l'agent",
+            details = f"Modification de l'agent avec le numéro NNI: {nni}, le nom complet: {fullname}, la catégorie: {category}, la date de naissance: {date_of_birth}, le lieu de naissance: {birth_place}, le téléphone: {telephone}, l'adresse: {address}"
+        )
+        db.add(log_entry)
 
         # Update agent details
         agent.nni = nni
@@ -771,6 +779,15 @@ async def edit_agent(
 
 
 
+
+@router.get("/admin/activity-logs/{user_id}", response_model=List[schemas.ActivityLogResponse])
+def get_activity_logs(user_id: int, db: Session = Depends(get_db), auth: str = Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email == auth).first()
+    if not admin_user or admin_user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+
+    logs = db.query(models.ActivityLog).filter(models.ActivityLog.user_id == user_id).all()
+    return logs
 
 
 
