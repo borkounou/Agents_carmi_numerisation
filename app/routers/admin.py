@@ -92,7 +92,8 @@ def logout(request:Request, db:Session=Depends(get_db), auth:str=Depends(verify_
 def index(request:Request,db:Session = Depends(get_db), 
           auth:str=Depends(verify_session),
           page:int =Query(1,ge=1),
-          page_size:int =Query(10,ge=1, le=100)
+          page_size:int =Query(10,ge=1, le=100),
+
           ):
     try:
 
@@ -102,8 +103,7 @@ def index(request:Request,db:Session = Depends(get_db),
             raise HTTPException(status_code=401, detail="User not found")
         
         role = user.role
-        # agents = db.query(models.Agent).all()
-        # Paginated agents with selected columns
+        offset = (page-1)*page_size
         agents = db.query(
             models.Agent.id,
             models.Agent.title_number,
@@ -114,7 +114,7 @@ def index(request:Request,db:Session = Depends(get_db),
             models.Agent.category,
             models.Agent.telephone,
             func.replace(models.Agent.document_path, '\\', '/').label('document_path')
-        ).offset((page - 1) * page_size).limit(page_size).all()
+        ).offset(offset).limit(page_size).all()
 
         data = {
             "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", "DATE DE NAISSANCE", "LIEU DE NAISSANCE", "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"],  # Adjust based on your User model
@@ -131,13 +131,6 @@ def index(request:Request,db:Session = Depends(get_db),
 
         total_agents, total_non_numerise, total_perdu = counts
 
-        # query = text("SELECT COUNT(*) FROM agents;")
-        # query_manquant = text("SELECT COUNT(*) FROM dossiers_non_numerise;")
-        # query_perdu =  text("SELECT COUNT(*) FROM dossier_perdu;") 
-        # total_agents = db.execute(query).scalar()
-        # total_non_numerise = db.execute(query_manquant).scalar()
-        # total_perdu = db.execute(query_perdu).scalar()
-        
         return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role, "total_agents":total_agents, "total_manquant":total_non_numerise, "total_perdu":total_perdu,"pagination": {"page": page, "page_size": page_size}})
     except SQLAlchemyError as e:
     
@@ -180,6 +173,24 @@ def get_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth
     return templates.TemplateResponse("dossier_manquant.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
 
 
+
+
+
+@router.get("/admin/listes-dossiermanquant", response_class=HTMLResponse)
+def manquants_details(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit 😊😊")
+    dossiers = db.query(models.DossierNoNumeriser).all()
+    data = {
+        "columns": ["ID", "NUMERO DE TITRE", "Nom complet", "Categorie"],  # Adjust based on your User model
+        "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category] for dossier in dossiers]
+    }
+
+    return templates.TemplateResponse("manquants_details.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
+
+
 #================================================================
 
 @router.get("/admin/dossier-perdu", response_class=HTMLResponse)
@@ -195,6 +206,22 @@ def get_dossier_perdu(request: Request, db:Session = Depends(get_db),auth:str=De
     }
 
     return templates.TemplateResponse("dossier_perdu.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
+
+
+
+@router.get("/admin/list-dossieregares", response_class=HTMLResponse)
+def egares_details(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit 😊😊")
+    dossiers = db.query(models.DossierPerdu).all()
+    data = {
+        "columns": ["ID", "NUMERO DE TITRE", "Fullname", "Categorie","Dossier Numero"],  # Adjust based on your User model
+        "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category, dossier.folder] for dossier in dossiers]
+    }
+
+    return templates.TemplateResponse("egares_details.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
 
 
 
@@ -244,6 +271,39 @@ async def agents_table(request: Request,db: Session = Depends(get_db),auth:str=D
                                        "data":table_data,
                                        "role":user.role})
 
+
+
+
+
+
+
+
+@router.get("/admin/agents-details", response_class=HTMLResponse)
+async def agents_details(request: Request,db: Session = Depends(get_db),auth:str=Depends(verify_session)):
+
+    user = db.query(models.User).filter(models.User.email == auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not user or user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+    
+    agents = db.query(models.Agent).all()
+    table_data = {
+        "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", 
+                    "DATE DE NAISSANCE", "LIEU DE NAISSANCE", 
+                    "CATEGORIE",  "TELEPHONE","DOCUMENT"
+                    ],  # Adjust based on your User model
+        "rows": [[agent.id, agent.title_number, agent.nni, agent.fullname, 
+                  agent.date_of_birth,agent.birth_place,agent.category, 
+                  agent.telephone,
+                   agent.document_path.replace("\\", "/")
+                  ] 
+                  for agent in agents]
+    }
+    return templates.TemplateResponse("agents_details.html", 
+                                      {"request": request, 
+                                       "body_class": "sb-nav-fixed", 
+                                       "data":table_data,
+                                       "role":user.role})
 
 
 @router.get("/admin/register-user", response_class=HTMLResponse)

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block head_title %}Users{% endblock %}
+
+{% block content %}
+<div id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4 animate__animated animate__fadeIn">
+            <!-- Page Header -->
+            <h1 class="mt-4">Dossiers des agents</h1>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active">Tous les dossiers numérisés des agents de Carmi</li>
+            </ol>
+
+            <!-- Agents Table -->
+            <div class="card mb-4 shadow-lg animate__animated animate__fadeInUp">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-table me-1"></i>
+                    Table des agents
+                </div>
+                <div class="card-body">
+                    <table id="datatablesSimple" class="table table-hover">
+                        <thead>
+                            <tr>
+                                {% for column in data["columns"] %}
+                                    <th>{{ column }}</th>
+                                {% endfor %}
+                               
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr id="tableFoot"></tr>
+                        </tfoot>
+                        <tbody>
+                            {% for row in data["rows"] %}
+                                <tr data-toggle="modal" style="cursor: pointer;">
+                                    {% for cell in row %}
+                                        <td>
+                                            {% if loop.index == 1 %}
+                                                <a href="/admin/detail-agent/{{ row[0] }}" class="text-primary" style="text-decoration: none; cursor: pointer;">
+                                                    {{ cell }}
+                                                </a>
+                                            {% else %}
+                                                {{ cell }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Include Footer -->
+    {% include "footer.html" %}
+</div>
+{% endblock %}

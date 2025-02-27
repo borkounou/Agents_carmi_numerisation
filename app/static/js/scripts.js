@@ -28,6 +28,23 @@ window.addEventListener('DOMContentLoaded', event => {
 
 
 
+document.addEventListener("DOMContentLoaded", function () {
+    const categorySelect = document.getElementById("inputCategory");
+
+    // Restore the selected category from localStorage
+    const savedCategory = localStorage.getItem("selectedCategory");
+    if (savedCategory) {
+        categorySelect.value = savedCategory;
+    }
+
+    // Save the selected category to localStorage when it changes
+    categorySelect.addEventListener("change", function () {
+        localStorage.setItem("selectedCategory", this.value);
+    });
+});
+
+
+
 
  // Dynamically update the current year
  document.getElementById("current-year").textContent = new Date().getFullYear();
