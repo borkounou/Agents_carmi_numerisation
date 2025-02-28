@@ -878,10 +878,13 @@ def get_activity_logs(request:Request,db: Session = Depends(get_db), auth: str =
 
     # logs = db.query(models.ActivityLog).filter(models.ActivityLog.user_id == user_id).all()
     logs = db.query(models.ActivityLog).all()
-    print(logs)
+    table_data = {
+        "columns": ["ID", "User ID", "Action", "Details", "Timestamp"],  # Adjust based on your User model
+        "rows": [[log.id,log.user_id, log.action, log.details , log.timestamp] for log in logs]}
+  
     return  templates.TemplateResponse(
             "activity_logs.html",
-            {"request": request, "logs":logs}
+            {"request": request, "data":table_data}
         )
 
 
