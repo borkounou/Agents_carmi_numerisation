@@ -131,7 +131,9 @@ def index(request:Request,db:Session = Depends(get_db),
 
         total_agents, total_non_numerise, total_perdu = counts
 
-        return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role, "total_agents":total_agents, "total_manquant":total_non_numerise, "total_perdu":total_perdu,"pagination": {"page": page, "page_size": page_size}})
+        all_total = total_agents + total_non_numerise + total_perdu
+
+        return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role, "total_agents":total_agents, "total_manquant":total_non_numerise, "total_perdu":total_perdu, "all_total":all_total, "pagination": {"page": page, "page_size": page_size}})
     except SQLAlchemyError as e:
     
         raise HTTPException(status_code=500, detail="Une erreur produite dans la base des données.")
@@ -868,14 +870,19 @@ async def edit_agent(
 
 
 
-@router.get("/admin/activity-logs/{user_id}", response_model=List[schemas.ActivityLogResponse])
-def get_activity_logs(user_id: int, db: Session = Depends(get_db), auth: str = Depends(verify_session)):
+@router.get("/admin/activity-logs", response_model=List[schemas.ActivityLogResponse])
+def get_activity_logs(request:Request,db: Session = Depends(get_db), auth: str = Depends(verify_session)):
     admin_user = db.query(models.User).filter(models.User.email == auth).first()
     if not admin_user or admin_user.role != 'admin':
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
 
-    logs = db.query(models.ActivityLog).filter(models.ActivityLog.user_id == user_id).all()
-    return logs
+    # logs = db.query(models.ActivityLog).filter(models.ActivityLog.user_id == user_id).all()
+    logs = db.query(models.ActivityLog).all()
+    print(logs)
+    return  templates.TemplateResponse(
+            "activity_logs.html",
+            {"request": request, "logs":logs}
+        )
 
 
 

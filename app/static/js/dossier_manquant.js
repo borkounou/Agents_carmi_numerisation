@@ -42,8 +42,35 @@
                 document.getElementById("editManquantId").value = data.id;
                 document.getElementById("editManquantTitleNumber").value = data.title_number;
                 document.getElementById("editManquantFullname").value = data.fullname;
-                document.getElementById("editManquantCategory").value = data.category;
-               
+            // Get the category dropdown element
+            const categorySelect = document.getElementById('editManquantCategory');
+            const currentOption = document.getElementById('currentCategoryOption');
+            // Get the saved category value
+            const savedCategory = data.category;
+            currentOption.value = savedCategory
+
+
+            console.log("Saved Category:", savedCategory);
+
+            
+            // Convert options to an array for easier manipulation
+            const options = Array.from(categorySelect.options);
+
+            console.log("Dropdown Options:", options);
+
+            // Find the saved category option
+            const savedOption = options.find(option => option.value === savedCategory);
+
+            if (savedOption) {
+                // Remove the saved option from its current position
+                categorySelect.removeChild(savedOption);
+
+                // Insert the saved option at the top of the dropdown
+                categorySelect.insertBefore(savedOption, categorySelect.firstChild);
+
+                // Set the selected value to the saved category
+                categorySelect.value = savedCategory;
+            }
             
                 new bootstrap.Modal(document.getElementById("editManquantModal")).show();
             } else {

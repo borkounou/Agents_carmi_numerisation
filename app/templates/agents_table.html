@@ -100,10 +100,30 @@
                                 <label for="editBirthPlace" class="form-label"><i class="fas fa-map-marker-alt me-2"></i>Lieu de Naissance</label>
                                 <input type="text" class="form-control" id="editBirthPlace" name="birth_place">
                             </div>
+
                             <div class="mb-3">
                                 <label for="editCategory" class="form-label"><i class="fas fa-users me-2"></i>Catégorie</label>
-                                <input type="text" class="form-control" id="editCategory" name="category">
+                                <select class="form-control" id="editCategory" name="category">
+                                    <!-- This option will be dynamically replaced with the saved value -->
+                                    <option id="currentCategoryOption" value=""></option>
+                                    <option value="Veuf(ve) Militaire Ndjamena">Veuf(ve) Militaire Ndjamena</option>
+                                    <option value="Agent Militaire Ndjamena">Agent Militaire Ndjamena</option>
+                                    <option value="Agent Garde Ndjamena">Agent Garde Ndjamena</option>
+                                    <option value="Veuf(ve) Garde Ndjamena">Veuf(ve) Garde Ndjamena</option>
+                                    <option value="Agent Militaire Gassi">Agent Militaire Gassi</option>
+                                    <option value="Agent Garde Gassi">Agent Garde Gassi</option>
+                                    <option value="Veuf(ve) Militaire Gassi">Veuf(ve) Militaire Gassi</option>
+                                    <option value="Veuf(ve) Garde Gassi">Veuf(ve) Garde Gassi</option>
+
+
+                                    <option value="Veuf(ve) Militaire Ndjamena">Veuf(ve) Militaire Abeche</option>
+                                    <option value="Agent Militaire Ndjamena">Agent Militaire Abeche</option>
+                                    <option value="Agent Garde Ndjamena">Agent Garde Abeche</option>
+                                    <option value="Veuf(ve) Garde Ndjamena">Veuf(ve) Garde Abeche</option>
+                                </select>
                             </div>
+
+                            
                             <div class="mb-3">
                                 <label for="editPhone" class="form-label"><i class="fas fa-phone me-2"></i>Téléphone</label>
                                 <input type="text" class="form-control" id="editPhone" name="telephone">

@@ -46,7 +46,8 @@
                 document.getElementById("editTitleNumber").value = data.title_number;
                 document.getElementById("editDateOfBirth").value = data.date_of_birth;
                 document.getElementById("editBirthPlace").value = data.birth_place;
-                document.getElementById("editCategory").value = data.category;
+                // document.getElementById("editCategory").value = data.category;
+
                 document.getElementById("editPhone").value = data.telephone;
                 const documentLink = document.getElementById("currentDocumentLink");
                 if (data.document_path) {
@@ -56,6 +57,32 @@
                 } else {
                     documentLink.style.display = "none";
                 }
+
+
+
+            const categorySelect = document.getElementById('editCategory');
+            const currentOption = document.getElementById('currentCategoryOption');
+            // Get the saved category value
+            const savedCategory = data.category;
+            currentOption.value = savedCategory
+            // Convert options to an array for easier manipulation
+            const options = Array.from(categorySelect.options);
+
+            // Find the saved category option
+            const savedOption = options.find(option => option.value === savedCategory);
+
+            if (savedOption) {
+                // Remove the saved option from its current position
+                categorySelect.removeChild(savedOption);
+
+                // Insert the saved option at the top of the dropdown
+                categorySelect.insertBefore(savedOption, categorySelect.firstChild);
+
+                // Set the selected value to the saved category
+                categorySelect.value = savedCategory;
+            }
+            
+
                 new bootstrap.Modal(document.getElementById("editAgentModal")).show();
             } else {
                 const error = await response.json();

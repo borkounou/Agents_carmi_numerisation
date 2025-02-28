@@ -42,9 +42,30 @@
                 document.getElementById("editPerduId").value = data.id;
                 document.getElementById("editPerduTitleNumber").value = data.title_number;
                 document.getElementById("editPerduFullname").value = data.fullname;
-                document.getElementById("editPerduCategory").value = data.category;
+        
                 document.getElementById("editPerduFolder").value = data.folder;
-            
+
+                const categorySelect = document.getElementById('editPerduCategory');
+                const currentOption = document.getElementById('currentCategoryOption');
+                // Get the saved category value
+                const savedCategory = data.category;
+                currentOption.value = savedCategory
+                // Convert options to an array for easier manipulation
+                const options = Array.from(categorySelect.options);
+
+
+                // Find the saved category option
+                const savedOption = options.find(option => option.value === savedCategory);
+
+                if (savedOption) {
+                    // Remove the saved option from its current position
+                    categorySelect.removeChild(savedOption);
+                    // Insert the saved option at the top of the dropdown
+                    categorySelect.insertBefore(savedOption, categorySelect.firstChild);
+                    // Set the selected value to the saved category
+                    categorySelect.value = savedCategory;
+                }
+
                 new bootstrap.Modal(document.getElementById("editPerduModal")).show();
             } else {
                 const error = await response.json();

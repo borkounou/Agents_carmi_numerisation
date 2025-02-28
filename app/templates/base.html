@@ -55,7 +55,9 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navbarDropdown">
                     <li><a class="dropdown-item" href="#!">Settings</a></li>
-                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
+                    <li><a class="dropdown-item" href="{{ https_url_for(request,'get_activity_logs') }}">
+                        Activity Logs
+                    </a></li>
                     <li><hr class="dropdown-divider" /></li>
                     <li><a class="dropdown-item text-danger" href="{{ https_url_for(request,'logout') }}">Logout</a></li>
                 </ul>

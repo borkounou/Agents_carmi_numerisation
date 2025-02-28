@@ -11643,3 +11643,28 @@ footer a:hover {
       font-size: 0.8rem; /* Further reduce button font size for very small screens */
   }
 }
+
+
+
+
+/* Custom styles for the activity logs table */
+#activityLogsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#activityLogsTable th,
+#activityLogsTable td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+#activityLogsTable th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+#activityLogsTable tr:hover {
+  background-color: #f1f1f1;
+}
