@@ -7,14 +7,14 @@ from sqlalchemy.orm import Session,load_only
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func
 from starlette import status
+from sqlalchemy import cast, String
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse,JSONResponse
 from typing import List, Optional
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import models.models as models
 import schemas.schemas as schemas
 import datetime
-# from fastapi_cache.decorator import cache
 from sqlalchemy.sql import text 
 from fastapi import APIRouter
 from config.connection import get_db
@@ -89,22 +89,26 @@ def logout(request:Request, db:Session=Depends(get_db), auth:str=Depends(verify_
     return response
 
 @router.get('/admin', response_class=HTMLResponse)
-def index(request:Request,db:Session = Depends(get_db), 
+def index(request:Request,
+          db:Session = Depends(get_db), 
           auth:str=Depends(verify_session),
-          page:int =Query(1,ge=1),
-          page_size:int =Query(10,ge=1, le=100),
-
+          draw: Optional[int] = Query(1),  # DataTables parameter
+          start: Optional[int] = Query(0),  # DataTables parameter (offset)
+          length: Optional[int] = Query(10),  # DataTables parameter (page size)
+          search_value: Optional[str] = Query(None),  
           ):
-    try:
+    # try:
 
 
-        user = db.query(models.User).filter(models.User.email == auth).first()
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        
-        role = user.role
-        offset = (page-1)*page_size
-        agents = db.query(
+    user = db.query(models.User).filter(models.User.email == auth).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    role = user.role
+    # offset = (page-1)*page_size
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        query = db.query(
             models.Agent.id,
             models.Agent.title_number,
             models.Agent.nni,
@@ -114,32 +118,82 @@ def index(request:Request,db:Session = Depends(get_db),
             models.Agent.category,
             models.Agent.telephone,
             func.replace(models.Agent.document_path, '\\', '/').label('document_path')
-        ).offset(offset).limit(page_size).all()
+        )
 
-        data = {
-            "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", "DATE DE NAISSANCE", "LIEU DE NAISSANCE", "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"],  # Adjust based on your User model
-            "rows": [list(agent) for agent in agents]
-        }
+        if search_value:
+                query = query.filter(
+                models.Agent.title_number.contains(search_value) |
+                # models.Agent.nni.contains(search_value) |
+                models.Agent.fullname.contains(search_value) |
+                cast(models.Agent.nni, String).contains(search_value) |
+                # models.Agent.date_of_birth.contains(search_value) |
+                models.Agent.birth_place.contains(search_value) |
+                models.Agent.category.contains(search_value) |
+                models.Agent.telephone.contains(search_value)
+            )
+                
 
-        # Single COUNT query
-        counts = db.execute(text("""
-            SELECT 
-                (SELECT COUNT(*) FROM agents),
-                (SELECT COUNT(*) FROM dossiers_non_numerise),
-                (SELECT COUNT(*) FROM dossier_perdu)
-        """)).fetchone()
+        total_records = query.count()
+        agents = query.offset(start).limit(length).all()
+            # Single COUNT query
 
-        total_agents, total_non_numerise, total_perdu = counts
 
-        all_total = total_agents + total_non_numerise + total_perdu
+        data = [{
+            "id": agent.id,
+            "title_number": agent.title_number,
+            "nni": agent.nni,
+            "fullname": agent.fullname,
+            "date_of_birth":agent.date_of_birth.isoformat() if agent.date_of_birth else None,
+            "birth_place": agent.birth_place,
+            "category": agent.category,
+            "telephone": agent.telephone,
+            "document_path": agent.document_path
+        } for agent in agents]
 
-        return templates.TemplateResponse("index.html",{"request":request, "body_class": "sb-nav-fixed", "data":data, "username":user.username, "role":role, "total_agents":total_agents, "total_manquant":total_non_numerise, "total_perdu":total_perdu, "all_total":all_total, "pagination": {"page": page, "page_size": page_size}})
-    except SQLAlchemyError as e:
+
+        return JSONResponse({
+            "draw": draw,
+            "recordsTotal": total_records,
+            "recordsFiltered": total_records,  # Use filtered count if search is applied
+            "data": data
+    })
+
     
-        raise HTTPException(status_code=500, detail="Une erreur produite dans la base des données.")
+    # .offset(offset).limit(page_size).all()
+
+    # data = {
+    #     "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", "DATE DE NAISSANCE", "LIEU DE NAISSANCE", "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"],  # Adjust based on your User model
+    #     "rows": [list(agent) for agent in agents]
+    # }
+
+    # Single COUNT query
+    counts = db.execute(text("""
+        SELECT 
+            (SELECT COUNT(*) FROM agents),
+            (SELECT COUNT(*) FROM dossiers_non_numerise),
+            (SELECT COUNT(*) FROM dossier_perdu)
+    """)).fetchone()
+
+    total_agents, total_non_numerise, total_perdu = counts
+
+    all_total = total_agents + total_non_numerise + total_perdu
+
+    return templates.TemplateResponse("index.html",
+                                        {"request":request, 
+                                        "body_class": "sb-nav-fixed", 
+                                        "username":user.username, 
+                                        "role":role, 
+                                        "total_agents":total_agents, 
+                                        "total_manquant":total_non_numerise, 
+                                        "total_perdu":total_perdu, "all_total":all_total, 
+                                        "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", "DATE DE NAISSANCE", "LIEU DE NAISSANCE", "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"]
+                                        })
+    # except SQLAlchemyError as e:
     
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Quelque chose ne va pas! Ressayer encore!! ou {str(e)}")
+    #     raise HTTPException(status_code=500, detail="Une erreur produite dans la base des données.")
+    
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"Quelque chose ne va pas! Ressayer encore!! ou {str(e)}")
 
 
 @router.get("/admin/users-table", response_class=HTMLResponse)
@@ -1009,6 +1063,11 @@ async def light_nav(request: Request):
 async def layoutstatic(request: Request):
     return templates.TemplateResponse("layout-static.html", {"request": request, "body_class": ""})
 
+
+
+@router.get("/test-admin", response_class=HTMLResponse)
+async def test_admin(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request, "body_class": "sb-nav-fixed"})
 
 
 

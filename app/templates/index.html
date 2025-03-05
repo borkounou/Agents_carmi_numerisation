@@ -94,100 +94,23 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table id="datatablesSimple" class="table table-hover">
+                        <table id="agentTable" class="table table-hover">
                             <thead>
                                 <tr>
-                                    {% for column in data["columns"] %}
+                                    {% for column in columns %}
                                         <th>{{ column }}</th>
                                     {% endfor %}
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tfoot>
-                                <tr id="tableFoot"></tr>
-                            </tfoot>
+                
                             <tbody>
-                                {% for row in data["rows"] %}
-                                    <tr data-user-id="{{ row[0] }}" onclick="navAgentDetails(this)" style="cursor: pointer;">
-                                        {% for cell in row %}
-                                            <td>
-                                                {% if loop.index == 1 %}
-                                                    <a href="/admin/detail-agent/{{ row[0] }}" class="text-primary" style="text-decoration: none; cursor: pointer;">
-                                                        {{ cell }}
-                                                    </a>
-                                                {% else %}
-                                                    {{ cell }}
-                                                {% endif %}
-                                            </td>
-                                        {% endfor %}
-                                        <td style="text-align: center; width: 100px;">
-                                            <button class="btn btn-info btn-sm table-action-btn" data-pdf-path="{{ row[8] }}" onclick="openViewModal('{{ row[8] }}')">
-                                                <i class="fas fa-eye me-1"></i>Voir
-                                            </button>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
+
                             </tbody>
                         </table>
                     </div>
 
-<!-- Pagination Controls -->
-<nav aria-label="Page navigation">
-    <ul class="pagination justify-content-center">
-        <!-- Previous Button -->
-        {% if pagination.page > 1 %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ pagination.page - 1 }}&page_size={{ pagination.page_size }}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-        {% endif %}
 
-        <!-- Always Show the First Page -->
-        <li class="page-item {% if 1 == pagination.page %}active{% endif %}">
-            <a class="page-link" href="?page=1&page_size={{ pagination.page_size }}">1</a>
-        </li>
-
-        <!-- Ellipsis Before Current Range (if needed) -->
-        {% if pagination.page > 4 %}
-            <li class="page-item disabled">
-                <span class="page-link">...</span>
-            </li>
-        {% endif %}
-
-        <!-- Pages Around the Current Page -->
-        {% for p in range([pagination.page - 2, 2]|max, [pagination.page + 3, (total_agents // pagination.page_size) + 1]|min) %}
-            {% if p > 1 and p < (total_agents // pagination.page_size) + 1 %}
-                <li class="page-item {% if p == pagination.page %}active{% endif %}">
-                    <a class="page-link" href="?page={{ p }}&page_size={{ pagination.page_size }}">{{ p }}</a>
-                </li>
-            {% endif %}
-        {% endfor %}
-
-        <!-- Ellipsis After Current Range (if needed) -->
-        {% if pagination.page < (total_agents // pagination.page_size) - 2 %}
-            <li class="page-item disabled">
-                <span class="page-link">...</span>
-            </li>
-        {% endif %}
-
-        <!-- Always Show the Last Page -->
-        {% if (total_agents // pagination.page_size) + 1 > 1 %}
-            <li class="page-item {% if (total_agents // pagination.page_size) + 1 == pagination.page %}active{% endif %}">
-                <a class="page-link" href="?page={{ (total_agents // pagination.page_size) + 1 }}&page_size={{ pagination.page_size }}">{{ (total_agents // pagination.page_size) + 1 }}</a>
-            </li>
-        {% endif %}
-
-        <!-- Next Button -->
-        {% if pagination.page < (total_agents // pagination.page_size) + 1 %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ pagination.page + 1 }}&page_size={{ pagination.page_size }}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-        {% endif %}
-    </ul>
-</nav>
                 </div>
             </div>
         </div>
