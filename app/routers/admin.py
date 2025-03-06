@@ -3,8 +3,7 @@ sys.path.append('./')
 import os
 from typing import List 
 from fastapi import HTTPException, Depends,Request,Form, UploadFile, File, Query
-from sqlalchemy.orm import Session,load_only
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import func
 from starlette import status
 from sqlalchemy import cast, String
@@ -97,104 +96,180 @@ def index(request:Request,
           length: Optional[int] = Query(10),  # DataTables parameter (page size)
           search_value: Optional[str] = Query(None),  
           ):
-    # try:
+    try:
 
+
+        user = db.query(models.User).filter(models.User.email == auth).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        role = user.role
+        # offset = (page-1)*page_size
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            query = db.query(
+                models.Agent.id,
+                models.Agent.title_number,
+                models.Agent.nni,
+                models.Agent.fullname,
+                models.Agent.date_of_birth,
+                models.Agent.birth_place,
+                models.Agent.category,
+                models.Agent.telephone,
+                func.replace(models.Agent.document_path, '\\', '/').label('document_path')
+            )
+
+            if search_value:
+                    query = query.filter(
+                    models.Agent.title_number.contains(search_value) |
+                    # models.Agent.nni.contains(search_value) |
+                    models.Agent.fullname.contains(search_value) |
+                    cast(models.Agent.nni, String).contains(search_value) |
+                    # models.Agent.date_of_birth.contains(search_value) |
+                    models.Agent.birth_place.contains(search_value) |
+                    models.Agent.category.contains(search_value) |
+                    models.Agent.telephone.contains(search_value)
+                )
+                    
+
+            total_records = query.count()
+            agents = query.offset(start).limit(length).all()
+                # Single COUNT query
+
+
+            data = [{
+                "id": agent.id,
+                "title_number": agent.title_number,
+                "nni": agent.nni,
+                "fullname": agent.fullname,
+                "date_of_birth":agent.date_of_birth.isoformat() if agent.date_of_birth else None,
+                "birth_place": agent.birth_place,
+                "category": agent.category,
+                "telephone": agent.telephone,
+                "document_path": agent.document_path
+            } for agent in agents]
+
+
+            return JSONResponse({
+                "draw": draw,
+                "recordsTotal": total_records,
+                "recordsFiltered": total_records,  # Use filtered count if search is applied
+                "data": data
+        })
+
+
+        # Single COUNT query
+        counts = db.execute(text("""
+            SELECT 
+                (SELECT COUNT(*) FROM agents),
+                (SELECT COUNT(*) FROM dossiers_non_numerise),
+                (SELECT COUNT(*) FROM dossier_perdu)
+        """)).fetchone()
+
+        total_agents, total_non_numerise, total_perdu = counts
+
+        all_total = total_agents + total_non_numerise + total_perdu
+
+        return templates.TemplateResponse("index.html",
+                                            {"request":request, 
+                                            "body_class": "sb-nav-fixed", 
+                                            "username":user.username, 
+                                            "role":role, 
+                                            "total_agents":total_agents, 
+                                            "total_manquant":total_non_numerise, 
+                                            "total_perdu":total_perdu, "all_total":all_total, 
+                                            "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", 
+                                                        "DATE DE NAISSANCE", "LIEU DE NAISSANCE", 
+                                                        "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"]
+                                            })
+    except SQLAlchemyError as e:
+    
+        raise HTTPException(status_code=500, detail="Une erreur produite dans la base des données.")
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Quelque chose ne va pas! Ressayer encore!! ou {str(e)}")
+
+
+
+
+
+@router.get("/admin/agents-table", response_class=HTMLResponse)
+async def agents_table(request:Request,
+          db:Session = Depends(get_db), 
+          auth:str=Depends(verify_session),
+          draw: Optional[int] = Query(1),  # DataTables parameter
+          start: Optional[int] = Query(0),  # DataTables parameter (offset)
+          length: Optional[int] = Query(10),  # DataTables parameter (page size)
+          search_value: Optional[str] = Query(None),  
+):
+    
 
     user = db.query(models.User).filter(models.User.email == auth).first()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
-    
+        
     role = user.role
-    # offset = (page-1)*page_size
+    categories = db.query(models.Category.name).all()
+    categories= [category[0] for category in categories]
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        query = db.query(
-            models.Agent.id,
-            models.Agent.title_number,
-            models.Agent.nni,
-            models.Agent.fullname,
-            models.Agent.date_of_birth,
-            models.Agent.birth_place,
-            models.Agent.category,
-            models.Agent.telephone,
-            func.replace(models.Agent.document_path, '\\', '/').label('document_path')
-        )
-
-        if search_value:
-                query = query.filter(
-                models.Agent.title_number.contains(search_value) |
-                # models.Agent.nni.contains(search_value) |
-                models.Agent.fullname.contains(search_value) |
-                cast(models.Agent.nni, String).contains(search_value) |
-                # models.Agent.date_of_birth.contains(search_value) |
-                models.Agent.birth_place.contains(search_value) |
-                models.Agent.category.contains(search_value) |
-                models.Agent.telephone.contains(search_value)
+            query = db.query(
+                models.Agent.id,
+                models.Agent.title_number,
+                models.Agent.nni,
+                models.Agent.fullname,
+                models.Agent.date_of_birth,
+                models.Agent.birth_place,
+                models.Agent.category,
+                models.Agent.telephone,
+                func.replace(models.Agent.document_path, '\\', '/').label('document_path')
             )
-                
 
-        total_records = query.count()
-        agents = query.offset(start).limit(length).all()
-            # Single COUNT query
+            if search_value:
+                    query = query.filter(
+                    models.Agent.title_number.contains(search_value) |
+                    # models.Agent.nni.contains(search_value) |
+                    models.Agent.fullname.contains(search_value) |
+                    cast(models.Agent.nni, String).contains(search_value) |
+                    # models.Agent.date_of_birth.contains(search_value) |
+                    models.Agent.birth_place.contains(search_value) |
+                    models.Agent.category.contains(search_value) |
+                    models.Agent.telephone.contains(search_value)
+                )
+                    
+            total_records = query.count()    
+            agents = query.offset(start).limit(length).all()
+                # Single COUNT query
 
+            data = [{
+                "id": agent.id,
+                "title_number": agent.title_number,
+                "nni": agent.nni,
+                "fullname": agent.fullname,
+                "date_of_birth":agent.date_of_birth.isoformat() if agent.date_of_birth else None,
+                "birth_place": agent.birth_place,
+                "category": agent.category,
+                "telephone": agent.telephone,
+                "document_path": agent.document_path
+            } for agent in agents]
 
-        data = [{
-            "id": agent.id,
-            "title_number": agent.title_number,
-            "nni": agent.nni,
-            "fullname": agent.fullname,
-            "date_of_birth":agent.date_of_birth.isoformat() if agent.date_of_birth else None,
-            "birth_place": agent.birth_place,
-            "category": agent.category,
-            "telephone": agent.telephone,
-            "document_path": agent.document_path
-        } for agent in agents]
+            return JSONResponse({
+                "draw": draw,
+                "recordsTotal": total_records,
+                "recordsFiltered": total_records,  # Use filtered count if search is applied
+                "data": data
+        })
 
-
-        return JSONResponse({
-            "draw": draw,
-            "recordsTotal": total_records,
-            "recordsFiltered": total_records,  # Use filtered count if search is applied
-            "data": data
-    })
-
-    
-    # .offset(offset).limit(page_size).all()
-
-    # data = {
-    #     "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", "DATE DE NAISSANCE", "LIEU DE NAISSANCE", "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"],  # Adjust based on your User model
-    #     "rows": [list(agent) for agent in agents]
-    # }
-
-    # Single COUNT query
-    counts = db.execute(text("""
-        SELECT 
-            (SELECT COUNT(*) FROM agents),
-            (SELECT COUNT(*) FROM dossiers_non_numerise),
-            (SELECT COUNT(*) FROM dossier_perdu)
-    """)).fetchone()
-
-    total_agents, total_non_numerise, total_perdu = counts
-
-    all_total = total_agents + total_non_numerise + total_perdu
-
-    return templates.TemplateResponse("index.html",
-                                        {"request":request, 
-                                        "body_class": "sb-nav-fixed", 
-                                        "username":user.username, 
-                                        "role":role, 
-                                        "total_agents":total_agents, 
-                                        "total_manquant":total_non_numerise, 
-                                        "total_perdu":total_perdu, "all_total":all_total, 
-                                        "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", "DATE DE NAISSANCE", "LIEU DE NAISSANCE", "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"]
-                                        })
-    # except SQLAlchemyError as e:
-    
-    #     raise HTTPException(status_code=500, detail="Une erreur produite dans la base des données.")
-    
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"Quelque chose ne va pas! Ressayer encore!! ou {str(e)}")
-
+    return templates.TemplateResponse("agents_table.html",
+                                            {"request":request, 
+                                            "body_class": "sb-nav-fixed", 
+                                            "username":user.username, 
+                                            "role":role, 
+                                            "categories": categories,
+                                            "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", 
+                                                        "DATE DE NAISSANCE", "LIEU DE NAISSANCE", 
+                                                        "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"]
+                                            })
 
 @router.get("/admin/users-table", response_class=HTMLResponse)
 async def users_table(request: Request,db: Session = Depends(get_db),auth:str=Depends(verify_session)):
@@ -300,32 +375,7 @@ def get_dossier_manquant(request: Request, db:Session = Depends(get_db),auth:str
 #================================================================
 
 
-@router.get("/admin/agents-table", response_class=HTMLResponse)
-async def agents_table(request: Request,db: Session = Depends(get_db),auth:str=Depends(verify_session)):
 
-    user = db.query(models.User).filter(models.User.email == auth).first()
-    # Check if the user exists and if their role is 'admin'
-    if not user or user.role != 'admin':
-        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
-    
-    agents = db.query(models.Agent).all()
-    table_data = {
-        "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", 
-                    "DATE DE NAISSANCE", "LIEU DE NAISSANCE", 
-                    "CATEGORIE",  "TELEPHONE","DOCUMENT"
-                    ],  # Adjust based on your User model
-        "rows": [[agent.id, agent.title_number, agent.nni, agent.fullname, 
-                  agent.date_of_birth,agent.birth_place,agent.category, 
-                  agent.telephone,
-                   agent.document_path.replace("\\", "/")
-                  ] 
-                  for agent in agents]
-    }
-    return templates.TemplateResponse("agents_table.html", 
-                                      {"request": request, 
-                                       "body_class": "sb-nav-fixed", 
-                                       "data":table_data,
-                                       "role":user.role})
 
 
 
@@ -376,10 +426,54 @@ def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),a
     # Check if the user exists and if their role is 'admin'
     if not admin_user:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit de creer un utilisateur")
-    return templates.TemplateResponse("create_dossier_manquant.html", {"request": request, "body_class": "bg-light"})
+    
+    categories = db.query(models.Category.name).all()
+    categories= [category[0] for category in categories]
+    return templates.TemplateResponse("create_dossier_manquant.html", {"request": request, "body_class": "bg-light", "categories": categories})
 
 
 
+
+@router.get("/admin/create-category", response_class=HTMLResponse)
+def create_category(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit de creer un utilisateur")
+    return templates.TemplateResponse("create_category.html", {"request": request, "body_class": "bg-light"})
+
+
+@router.post('/admin/create-category',status_code=status.HTTP_201_CREATED, response_model=List[schemas.CategoryResponse])
+async def create_category(request:Request, 
+                 name:str=Form(...),
+                 db:Session=Depends(get_db),
+                 auth:str=Depends(verify_session)):
+    
+    admin_user = db.query(models.User).filter(models.User.email == auth).first()
+    try:
+        form_data = await request.form()
+        error_message = None
+        if not admin_user:
+            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs accrédités uniquement.")
+        new_category = models.Category(name=name)
+        db.add(new_category)
+        db.commit()
+        db.refresh(new_category)
+        return templates.TemplateResponse(
+            "create_category.html",
+            {"request": request, "success_message": f"La catégorie {name} a été ajouté avec succès !"}
+        )
+    except IntegrityError as e:
+            db.rollback()
+            if "ix_name" in str(e.orig):
+                error_message = "Un enregistrement avec ce NNI ou ce numéro de titre existe déjà. Merci de vérifier les informations et de réessayer."
+            else:
+                error_message = "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
+ 
+    return templates.TemplateResponse(
+            "create_category.html",
+            {"request": request, "error_message": error_message, "form_data": form_data}
+        )
 
 @router.post('/admin/create-dossier-no-numeriser',status_code=status.HTTP_201_CREATED, response_model=List[schemas.DossierNoNumeriserResponse])
 async def create_dossier_no_numeriser(request:Request, 
@@ -396,6 +490,9 @@ async def create_dossier_no_numeriser(request:Request,
         if not admin_user:
             raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs accrédités uniquement.")
         
+
+        categories = db.query(models.Category.name).all()
+        categories= [category[0] for category in categories]
         new_dossier = models.DossierNoNumeriser(
             title_number=title_number,
             fullname=fullname,
@@ -406,7 +503,7 @@ async def create_dossier_no_numeriser(request:Request,
         db.refresh(new_dossier)
         return templates.TemplateResponse(
             "create_dossier_manquant.html",
-            {"request": request, "success_message": f"Le dossier manquant de {fullname} a été ajouté avec succès !"}
+            {"request": request, "success_message": f"Le dossier manquant de {fullname} a été ajouté avec succès !", "categories": categories}
         )
     except IntegrityError as e:
             db.rollback()
@@ -417,7 +514,7 @@ async def create_dossier_no_numeriser(request:Request,
  
     return templates.TemplateResponse(
             "create_dossier_manquant.html",
-            {"request": request, "error_message": error_message, "form_data": form_data}
+            {"request": request, "error_message": error_message, "form_data": form_data,"categories": categories}
         )
 
 
@@ -429,7 +526,10 @@ def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),a
     # Check if the user exists and if their role is 'admin'
     if not admin_user:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit de creer un utilisateur")
-    return templates.TemplateResponse("create_dossier_perdu.html", {"request": request, "body_class": "bg-light"})
+    
+    categories = db.query(models.Category.name).all()
+    categories= [category[0] for category in categories]
+    return templates.TemplateResponse("create_dossier_perdu.html", {"request": request, "body_class": "bg-light", "categories": categories})
 
 #================================================================
 
@@ -454,6 +554,8 @@ async def create_dossier_perdu(request:Request,
         if not admin_user:
             raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs accrédités uniquement.")
         
+        categories = db.query(models.Category.name).all()
+        categories= [category[0] for category in categories]
         new_dossier = models.DossierPerdu(
             title_number=title_number,
             fullname=fullname,
@@ -465,7 +567,7 @@ async def create_dossier_perdu(request:Request,
         db.refresh(new_dossier)
         return templates.TemplateResponse(
             "create_dossier_perdu.html",
-            {"request": request, "success_message": f"Le dossier égaré de {fullname} a été ajouté avec succès !"}
+            {"request": request, "success_message": f"Le dossier égaré de {fullname} a été ajouté avec succès !", "categories": categories}
         )
     except IntegrityError as e:
             db.rollback()
@@ -476,7 +578,7 @@ async def create_dossier_perdu(request:Request,
  
     return templates.TemplateResponse(
             "create_dossier_perdu.html",
-            {"request": request, "error_message": error_message, "form_data": form_data}
+            {"request": request, "error_message": error_message, "form_data": form_data, "categories": categories}
         )
 
 
@@ -571,15 +673,17 @@ async def create_agent(request:Request,
             raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
 
 
+        categories = db.query(models.Category.name).all()
+        categories= [category[0] for category in categories]
         dossier_no_numeriser= db.query(models.DossierNoNumeriser).filter(models.DossierNoNumeriser.title_number==title_number).first()
         dossier_perdu = db.query(models.DossierPerdu).filter(models.DossierPerdu.title_number==title_number).first()
         if dossier_no_numeriser:
             error_message = f"L'agent avec Numéro de titre {title_number} existe déjà dans Dossier non numerisé."
-            return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message})
+            return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories}),
         
         if dossier_perdu:
             error_message = f"L'agent avec Numéro de titre {title_number} existe déjà dans Dossier égaré ou perdu."
-            return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message})
+            return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories})
         form_data = await request.form()
         error_message = None
         file_path = f"{UPLOAD_DIR}/{document.filename}"#Path(UPLOAD_DIR) /document.filename
@@ -615,7 +719,7 @@ async def create_agent(request:Request,
         db.refresh(new_agent)
         return templates.TemplateResponse(
             "create_agent.html",
-            {"request": request, "success_message": f"Vous avez créer avec succés l'agent de NNI: {nni}!"}
+            {"request": request, "success_message": f"Vous avez créer avec succés l'agent de NNI: {nni}!", "categories":categories}
         )
     
     except IntegrityError as e:
@@ -627,7 +731,7 @@ async def create_agent(request:Request,
  
     return templates.TemplateResponse(
             "create_agent.html",
-            {"request": request, "error_message": error_message, "form_data": form_data}
+            {"request": request, "error_message": error_message, "form_data": form_data, "categories":categories}
         )
         
    
@@ -1038,15 +1142,15 @@ def charts(request: Request):
 
 
 
-
-
 @router.get("/admin/register-agent", response_class=HTMLResponse)
 def register_agent(request: Request, db: Session = Depends(get_db),auth:str=Depends(verify_session)):
     user = db.query(models.User).filter(models.User.email == auth).first()
     # Check if the user exists and if their role is 'admin'
+    categories = db.query(models.Category.name).all()
+    categories= [category[0] for category in categories]
     if not user:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
-    return templates.TemplateResponse("create_agent.html",{"request":request, "body_class": "sb-nav-fixed", "role": user.role, "username": user.username})
+    return templates.TemplateResponse("create_agent.html",{"request":request, "body_class": "sb-nav-fixed", "role": user.role, "username": user.username, "categories": categories})
 
 
 @router.get("/light-nav", response_class=HTMLResponse)
@@ -1054,21 +1158,9 @@ async def light_nav(request: Request):
     return templates.TemplateResponse("layout-sidenav-light", {"request": request, "body_class": "sb-nav-fixed"})
 
 
-
-
-
-
-
 @router.get("/layoutstatic", response_class=HTMLResponse)
 async def layoutstatic(request: Request):
     return templates.TemplateResponse("layout-static.html", {"request": request, "body_class": ""})
-
-
-
-@router.get("/test-admin", response_class=HTMLResponse)
-async def test_admin(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "body_class": "sb-nav-fixed"})
-
 
 
 @router.get("/401", response_class=HTMLResponse)

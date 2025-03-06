@@ -107,20 +107,10 @@
                                         <a class="nav-link" href="{{ https_url_for(request,'get_dossier_perdu') }}">Liste de dossiers egarés</a>
                                         <a class="nav-link" href="{{ https_url_for(request,'create_dossier_no_numeriser') }}">Ajouter dossier manquant</a>
                                         <a class="nav-link" href="{{ https_url_for(request,'create_dossier_perdu') }}">Ajouter dossier égaré</a>
+                                        <a class="nav-link" href="{{ https_url_for(request,'create_category') }}">Ajouter une categorie</a>
                                     </nav>
                                 </div>
 
-                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
-                                    Anomalies
-                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                </a>
-                                <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                                    <nav class="sb-sidenav-menu-nested nav">
-                                        <a class="nav-link" href="{{ https_url_for(request,'layout_error_401') }}">401 Page</a>
-                                        <a class="nav-link" href="{{ https_url_for(request,'layout_error_404') }}">404 Page</a>
-                                        <a class="nav-link" href="{{ https_url_for(request,'layout_error_500') }}">500 Page</a>
-                                    </nav>
-                                </div>
                             </nav>
                         </div>
 

@@ -2,6 +2,18 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 import datetime
 
+class CategoryBase(BaseModel):
+    name: str
+
+
+class CategoryCreate(CategoryBase):
+    pass 
+
+
+class CategoryResponse(CategoryBase):
+    id:int
+    class Config:
+        from_attributes = True
 
 class ActivityLogBase(BaseModel):
     user_id:int

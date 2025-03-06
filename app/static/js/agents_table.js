@@ -1,6 +1,69 @@
     
     let agentIdToDelete = null;
     // Open the Delete Modal
+
+
+    $(document).ready(function () {
+        $('#mainAgentTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "/admin/agents-table",  // Endpoint for server-side processing
+                "type": "GET",
+                "data": function (d) {
+                    d.search_value = d.search.value;  // Pass search query to the backend
+                }
+            },
+            "columns": [
+                { "data": "id" },
+                { "data": "title_number" },
+                { "data": "nni" },
+                { "data": "fullname" },
+                { "data": "date_of_birth" },
+                { "data": "birth_place" },
+                { "data": "category" },
+                { "data": "telephone" },
+                { "data": "document_path" },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return `
+                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+                            <button class="btn btn-primary btn-sm table-action-btn" data-user-id="${row.id}" onclick="navigateToAgentDetails(${row.id})">
+                                <i class="fas fa-info-circle me-1"></i>Visualiser
+                            </button>
+                            <button class="btn btn-primary btn-sm table-action-btn" data-user-id="${row.id}" onclick="openEditModal(${row.id})">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </button>
+                            <button class="btn btn-danger btn-sm table-action-btn delete-user-btn" data-user-id="${row.id}" onclick="openDeleteModal(${row.id})">
+                                <i class="fas fa-trash me-1"></i>Supprimer
+                            </button>
+                        </div>
+                    `;
+                    }
+                }
+            ],
+            "language": {
+                "search": "Rechercher:",
+                "lengthMenu": "Afficher _MENU_ entrées par page",
+                "zeroRecords": "Aucun enregistrement trouvé",
+                "info": "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+                "infoEmpty": "Affichage de 0 à 0 sur 0 entrées",
+                "infoFiltered": "(filtré à partir de _MAX_ entrées totales)",
+                "paginate": {
+                    "first": "Premier",
+                    "last": "Dernier",
+                    "next": "Suivant",
+                    "previous": "Précédent"
+                }
+            }
+        });
+    });
+    
+    
+
+
+
     function openDeleteModal(agentId) {
         agentIdToDelete = agentId; // Store the agent ID
         new bootstrap.Modal(document.getElementById("deleteAgentModal")).show();

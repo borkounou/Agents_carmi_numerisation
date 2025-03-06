@@ -19,50 +19,18 @@
                     Table des agents
                 </div>
                 <div class="card-body">
-                    <table id="datatablesSimple" class="table table-hover">
+                    <table id="mainAgentTable" class="table table-hover">
                         <thead>
                             <tr>
-                                {% for column in data["columns"] %}
+                                {% for column in columns %}
                                     <th>{{ column }}</th>
                                 {% endfor %}
                                 <th class="{% if role != 'admin' %}d-none{% endif %}">Action</th>
                             </tr>
                         </thead>
-                        <tfoot>
-                            <tr id="tableFoot"></tr>
-                        </tfoot>
+                      
                         <tbody>
-                            {% for row in data["rows"] %}
-                                <tr data-toggle="modal" style="cursor: pointer;">
-                                    {% for cell in row %}
-                                        <td>
-                                            {% if loop.index == 1 %}
-                                                <a href="/admin/detail-agent/{{ row[0] }}" class="text-primary" style="text-decoration: none; cursor: pointer;">
-                                                    {{ cell }}
-                                                </a>
-                                            {% else %}
-                                                {{ cell }}
-                                            {% endif %}
-                                        </td>
-                                    {% endfor %}
-                                    <td style="text-align: center; width: 100px;" {% if role != 'admin' %} class="d-none" {% endif %}>
-                                        <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                            <button class="btn btn-primary btn-sm table-action-btn" data-user-id="{{ row[0] }}" onclick="navigateToAgentDetails({{ row[0] }})">
-                                                <i class="fas fa-info-circle me-1"></i>Visualiser
-                                            </button>
-                                            <button class="btn btn-primary btn-sm table-action-btn" data-user-id="{{ row[0] }}" onclick="openEditModal({{ row[0] }})">
-                                                <i class="fas fa-edit me-1"></i>Modifier
-                                            </button>
-                                            <button class="btn btn-danger btn-sm table-action-btn delete-user-btn" data-user-id="{{ row[0] }}" onclick="openDeleteModal({{ row[0] }})">
-                                                <i class="fas fa-trash me-1"></i>Supprimer
-                                            </button>
-                                            <!-- <button class="btn btn-info btn-sm table-action-btn" data-pdf-path="{{ row[8] }}" onclick="openViewModal('{{ row[8] }}')">
-                                                <i class="fas fa-eye me-1"></i>Voir
-                                            </button> -->
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
+                
                         </tbody>
                     </table>
                 </div>
@@ -102,30 +70,17 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="editCategory" class="form-label"><i class="fas fa-users me-2"></i>Catégorie</label>
+                                <label for="editCategory" class="form-label">
+                                    <i class="fas fa-users me-2"></i>Catégorie
+                                </label>
                                 <select class="form-control" id="editCategory" name="category">
-                                    <!-- This option will be dynamically replaced with the saved value -->
+                                    <!-- Current category (will be dynamically replaced) -->
                                     <option id="currentCategoryOption" value=""></option>
-                                    <option value="Veuf(ve) Militaire Ndjamena">Veuf(ve) Militaire Ndjamena</option>
-                                    <option value="Agent Militaire Ndjamena">Agent Militaire Ndjamena</option>
-                                    <option value="Agent Garde Ndjamena">Agent Garde Ndjamena</option>
-                                    <option value="Veuf(ve) Garde Ndjamena">Veuf(ve) Garde Ndjamena</option>
-                                    <option value="Agent Militaire Gassi">Agent Militaire Gassi</option>
-                                    <option value="Agent Garde Gassi">Agent Garde Gassi</option>
-                                    <option value="Veuf(ve) Militaire Gassi">Veuf(ve) Militaire Gassi</option>
-                                    <option value="Veuf(ve) Garde Gassi">Veuf(ve) Garde Gassi</option>
-
-
-                                    <option value="Veuf(ve) Militaire Abeche">Veuf(ve) Militaire Abeche</option>
-                                    <option value="Agent Militaire Abeche">Agent Militaire Abeche</option>
-                                    <option value="Agent Garde Abeche">Agent Garde Abeche</option>
-                                    <option value="Veuf(ve) Garde Abeche">Veuf(ve) Garde Abeche</option>
-
-
-                                    <option value="Veuf(ve) Militaire Toutes">Veuf(ve) Militaire Toutes</option>
-                                    <option value="Agent Militaire Toutes">Agent Militaire Toutes</option>
-                                    <option value="Agent Garde Toutes">Agent Garde Toutes</option>
-                                    <option value="Veuf(ve) Garde Toutes">Veuf(ve) Garde Toutes</option>
+                            
+                                    <!-- Dynamically render categories from the database -->
+                                    {% for category in categories %}
+                                        <option value="{{ category }}">{{ category }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
 
