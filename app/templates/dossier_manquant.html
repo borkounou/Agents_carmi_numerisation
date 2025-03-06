@@ -21,46 +21,17 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table id="datatablesSimple">
+                    <table id="dossierManquantTable">
                         <thead>
                             <tr>
-                            {%for column in data["columns"]%}
+                            {%for column in columns %}
                                 <th>{{column}}</th>
                             {% endfor %}
-                            <th>action</th>
-                            <!-- <th class="{% if role != 'admin' %}hidden{% endif %}">action</th> -->
+                            <th>ACTION</th>
                             
                             </tr>
                         </thead>
-                        <tfoot>
-                            <tr id="tableFoot">
-                            </tr>
-                        </tfoot>
                         <tbody>
-                            {%for row in data["rows"]%}
-                                <tr data-toggle="modal"  style="cursor: pointer;">
-                                    {%for cell in row%}
-
-                                        <td>
-                                            {{cell}}
-                                    
-                                        </td>
-                    
-                                    {% endfor %}
-
-                                    <td style="text-align: center; width: 100px;" {% if role != 'admin' %} style="display:none;" {% endif %}>
-                                        <button class="btn btn-danger btn-sm table-action-btn delete-user-btn" data-user-id="{{ row[0] }}" onclick="openDeleteManquantModal({{ row[0] }})">
-                                            Supprimer
-                                        </button>
-                                        <button class="btn btn-primary btn-sm table-action-btn" data-user-id="{{ row[0] }}" onclick="openEditManquantModal({{ row[0] }})">
-                                            Modifier
-                                        </button>
-
-                                    </td>
-                                  
-                                </tr>
-
-                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

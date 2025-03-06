@@ -1,5 +1,57 @@
     
     let dossierPerduIdToDelete = null;
+
+
+    $(document).ready(function () {
+        $('#dossierPerduTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "/admin/dossier-perdu",  // Endpoint for server-side processing
+                "type": "GET",
+                "data": function (d) {
+                    d.search_value = d.search.value;  // Pass search query to the backend
+                }
+            },
+            "columns": [
+                { "data": "id" },
+                { "data": "title_number" },
+                { "data": "fullname" },
+                { "data": "category" },
+                { "data": "folder" },
+            
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return `
+                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+                            <button class="btn btn-primary btn-sm table-action-btn" data-user-id="${row.id}" onclick="openEditPerduModal(${row.id})">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </button>
+                            <button class="btn btn-danger btn-sm table-action-btn delete-user-btn" data-user-id="${row.id}" onclick="openDeletePerduModal(${row.id})">
+                                <i class="fas fa-trash me-1"></i>Supprimer
+                            </button>
+                        </div>
+                    `;
+                    }
+                }
+            ],
+            "language": {
+                "search": "Rechercher:",
+                "lengthMenu": "Afficher _MENU_ entrées par page",
+                "zeroRecords": "Aucun enregistrement trouvé",
+                "info": "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+                "infoEmpty": "Affichage de 0 à 0 sur 0 entrées",
+                "infoFiltered": "(filtré à partir de _MAX_ entrées totales)",
+                "paginate": {
+                    "first": "Premier",
+                    "last": "Dernier",
+                    "next": "Suivant",
+                    "previous": "Précédent"
+                }
+            }
+        });
+    });
     // Open the Delete Modal
     function openDeletePerduModal(agentId) {
         dossierPerduIdToDelete = agentId; // Store the agent ID

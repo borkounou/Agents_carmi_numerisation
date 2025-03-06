@@ -290,53 +290,189 @@ async def users_table(request: Request,db: Session = Depends(get_db),auth:str=De
 
 
 @router.get("/admin/dossier-no-numeriser", response_class=HTMLResponse)
-def get_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+def get_dossier_no_numeriser(request:Request,
+          db:Session = Depends(get_db), 
+          auth:str=Depends(verify_session),
+          draw: Optional[int] = Query(1),  # DataTables parameter
+          start: Optional[int] = Query(0),  # DataTables parameter (offset)
+          length: Optional[int] = Query(10),  # DataTables parameter (page size)
+          search_value: Optional[str] = Query(None)):
+
     admin_user = db.query(models.User).filter(models.User.email== auth).first()
     # Check if the user exists and if their role is 'admin'
     if not admin_user:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit 😊😊")
-    dossiers = db.query(models.DossierNoNumeriser).all()
-    data = {
-        "columns": ["ID", "NUMERO DE TITRE", "Nom complet", "Categorie"],  # Adjust based on your User model
-        "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category] for dossier in dossiers]
-    }
+    
+    role = admin_user.role
+    categories = db.query(models.Category.name).all()
+    categories= [category[0] for category in categories]
 
-    return templates.TemplateResponse("dossier_manquant.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            query = db.query(
+                models.DossierNoNumeriser.id,
+                models.DossierNoNumeriser.title_number,
+                models.DossierNoNumeriser.fullname,
+                models.DossierNoNumeriser.category
+            )
 
+            if search_value:
+                    query = query.filter(
+                    models.DossierNoNumeriser.title_number.contains(search_value) |
+                    models.DossierNoNumeriser.fullname.contains(search_value) |
+                    models.DossierNoNumeriser.category.contains(search_value) 
+                )
+                    
+            total_records = query.count()    
+            agents = query.offset(start).limit(length).all()
+                # Single COUNT query
 
+            data = [{
+                "id": agent.id,
+                "title_number": agent.title_number,
+                "fullname": agent.fullname,
+                "category": agent.category} for agent in agents]
+
+            return JSONResponse({
+                "draw": draw,
+                "recordsTotal": total_records,
+                "recordsFiltered": total_records,  # Use filtered count if search is applied
+                "data": data
+        })
+
+    return templates.TemplateResponse("dossier_manquant.html",
+                                            {"request":request, 
+                                            "body_class": "bg-light", 
+                                            "username":admin_user.username, 
+                                            "role":role, 
+                                            "categories":categories,
+                                            "columns": ["ID", "NUMERO DE TITRE",  "NOM COMPLET", "CATEGORIE"]
+                                            })
 
 
 
 @router.get("/admin/listes-dossiermanquant", response_class=HTMLResponse)
-def manquants_details(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+def manquants_details(request:Request,
+          db:Session = Depends(get_db), 
+          auth:str=Depends(verify_session),
+          draw: Optional[int] = Query(1),  # DataTables parameter
+          start: Optional[int] = Query(0),  # DataTables parameter (offset)
+          length: Optional[int] = Query(10),  # DataTables parameter (page size)
+          search_value: Optional[str] = Query(None), ):
     admin_user = db.query(models.User).filter(models.User.email== auth).first()
     # Check if the user exists and if their role is 'admin'
     if not admin_user:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit 😊😊")
-    dossiers = db.query(models.DossierNoNumeriser).all()
-    data = {
-        "columns": ["ID", "NUMERO DE TITRE", "Nom complet", "Categorie"],  # Adjust based on your User model
-        "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category] for dossier in dossiers]
-    }
+    
+    role = admin_user.role
 
-    return templates.TemplateResponse("manquants_details.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            query = db.query(
+                models.DossierNoNumeriser.id,
+                models.DossierNoNumeriser.title_number,
+                models.DossierNoNumeriser.fullname,
+                models.DossierNoNumeriser.category,
+            )
+
+            if search_value:
+                    query = query.filter(
+                    models.DossierNoNumeriser.title_number.contains(search_value) |
+                    models.DossierNoNumeriser.fullname.contains(search_value) |
+                    models.DossierNoNumeriser.category.contains(search_value) 
+                )
+                    
+            total_records = query.count()    
+            agents = query.offset(start).limit(length).all()
+                # Single COUNT query
+
+            data = [{
+                "id": agent.id,
+                "title_number": agent.title_number,
+                "fullname": agent.fullname,
+                "category": agent.category} for agent in agents]
+
+            return JSONResponse({
+                "draw": draw,
+                "recordsTotal": total_records,
+                "recordsFiltered": total_records,  # Use filtered count if search is applied
+                "data": data
+        })
+
+    return templates.TemplateResponse("manquants_details.html",
+                                            {"request":request, 
+                                            "body_class": "bg-light", 
+                                            "username":admin_user.username, 
+                                            "role":role, 
+                    
+                                            "columns": ["ID", "NUMERO DE TITRE",  "NOM COMPLET", "CATEGORIE"]
+                                            })
 
 
-#================================================================
 
 @router.get("/admin/dossier-perdu", response_class=HTMLResponse)
-def get_dossier_perdu(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
+async def get_dossier_perdu(request:Request,
+          db:Session = Depends(get_db), 
+          auth:str=Depends(verify_session),
+          draw: Optional[int] = Query(1),  # DataTables parameter
+          start: Optional[int] = Query(0),  # DataTables parameter (offset)
+          length: Optional[int] = Query(10),  # DataTables parameter (page size)
+          search_value: Optional[str] = Query(None), ):
     admin_user = db.query(models.User).filter(models.User.email== auth).first()
     # Check if the user exists and if their role is 'admin'
     if not admin_user:
         raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit 😊😊")
-    dossiers = db.query(models.DossierPerdu).all()
-    data = {
-        "columns": ["ID", "NUMERO DE TITRE", "Fullname", "Categorie","Dossier Numero"],  # Adjust based on your User model
-        "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category, dossier.folder] for dossier in dossiers]
-    }
+    
+    role = admin_user.role
 
-    return templates.TemplateResponse("dossier_perdu.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            query = db.query(
+                models.DossierPerdu.id,
+                models.DossierPerdu.title_number,
+                models.DossierPerdu.fullname,
+                models.DossierPerdu.category,
+                models.DossierPerdu.folder
+            )
+
+            if search_value:
+                    query = query.filter(
+                    models.DossierPerdu.title_number.contains(search_value) |
+                    models.DossierPerdu.fullname.contains(search_value) |
+                    models.DossierPerdu.category.contains(search_value) |
+                    models.DossierPerdu.folder.contains(search_value)
+                )
+                    
+            total_records = query.count()    
+            agents = query.offset(start).limit(length).all()
+                # Single COUNT query
+
+            data = [{
+                "id": agent.id,
+                "title_number": agent.title_number,
+                "fullname": agent.fullname,
+                "category": agent.category,
+                "folder":agent.folder
+                } for agent in agents]
+
+            return JSONResponse({
+                "draw": draw,
+                "recordsTotal": total_records,
+                "recordsFiltered": total_records,  # Use filtered count if search is applied
+                "data": data
+        })
+
+    return templates.TemplateResponse("dossier_perdu.html",
+                                            {"request":request, 
+                                            "body_class": "bg-light", 
+                                            "username":admin_user.username, 
+                                            "role":role, 
+                    
+                                            "columns": ["ID", "NUMERO DE TITRE",  "NOM COMPLET", "CATEGORIE","DOSSIER NUMERO"]
+                                            })
+    # data = {
+    #     "columns": ["ID", "NUMERO DE TITRE", "Fullname", "Categorie","Dossier Numero"],  # Adjust based on your User model
+    #     "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category, dossier.folder] for dossier in dossiers]
+    # }
+
+    # return templates.TemplateResponse("dossier_perdu.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
 
 
 
