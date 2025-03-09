@@ -272,21 +272,71 @@ async def agents_table(request:Request,
                                             })
 
 @router.get("/admin/users-table", response_class=HTMLResponse)
-async def users_table(request: Request,db: Session = Depends(get_db),auth:str=Depends(verify_session)):
-    # Fetch the user from the database based on the username
-    user = db.query(models.User).filter(models.User.email == auth).first()
-    role = user.role
-    # Check if the user exists and if their role is 'admin'
-    if not user or user.role != 'admin':
-        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
-    
-    users = db.query(models.User).all()
-    data = {
-        "columns": ["ID", "First Name", "Last Name", "Username", "Email", "Gender", "Is active"],  # Adjust based on your User model
-        "rows": [[user.id, user.first_name, user.last_name, user.username, user.email,user.gender,user.role] for user in users]
-    }
+async def users_table(request:Request,
+          db:Session = Depends(get_db), 
+          auth:str=Depends(verify_session),
+          draw: Optional[int] = Query(1),  # DataTables parameter
+          start: Optional[int] = Query(0),  # DataTables parameter (offset)
+          length: Optional[int] = Query(10),  # DataTables parameter (page size)
+          search_value: Optional[str] = Query(None)):
 
-    return templates.TemplateResponse("users_table.html", {"request": request, "body_class": "sb-nav-fixed", "data":data,"role":role,"username":user.username,})
+    admin_user = db.query(models.User).filter(models.User.email== auth).first()
+    # Check if the user exists and if their role is 'admin'
+    if not admin_user:
+        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux utilisateurs uniquement. vous n'avez pas droit 😊😊")
+    
+    role = admin_user.role
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            query = db.query(
+                models.User.id,
+                models.User.first_name,
+                models.User.last_name,
+                models.User.email,
+                models.User.username,
+                models.User.role,
+                models.User.created_at
+
+            )
+
+            if search_value:
+                    query = query.filter(
+                    models.User.first_name.contains(search_value) |
+                    models.User.last_name.contains(search_value) |
+                    models.User.username.contains(search_value)  |
+                    models.User.email.contains(search_value) 
+                )
+                    
+            total_records = query.count()    
+            agents = query.offset(start).limit(length).all()
+                # Single COUNT query
+
+#  "date_of_birth":agent.date_of_birth.isoformat() if agent.date_of_birth else None,
+            data = [{
+                "id": agent.id,
+                "first_name": agent.first_name,
+                "last_name": agent.last_name,
+                "email": agent.email,
+                "username": agent.username,
+                "role": agent.role,
+                "created_at":agent.created_at.isoformat() if agent.created_at else None
+                } for agent in agents]
+
+            return JSONResponse({
+                "draw": draw,
+                "recordsTotal": total_records,
+                "recordsFiltered": total_records,  # Use filtered count if search is applied
+                "data": data
+        })
+
+    return templates.TemplateResponse("users_table.html",
+                                            {"request":request, 
+                                            "body_class": "sb-nav-fixed", 
+                                            "username":admin_user.username, 
+                                            "role":role, 
+                                            "columns": ["ID", "Prenom", "Nom",  "Email",  "Nom Utilisateur","Role", "Date de Creation"]
+                                            })
+
 
 
 @router.get("/admin/dossier-no-numeriser", response_class=HTMLResponse)

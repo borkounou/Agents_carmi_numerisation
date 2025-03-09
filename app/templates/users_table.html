@@ -25,7 +25,7 @@
                     <table id="usersTable">
                         <thead>
                             <tr>
-                            {%for column in data["columns"]%}
+                            {%for column in columns%}
                                 <th>{{column}}</th>
                             {% endfor %}
                             <th>action</th>
@@ -37,27 +37,6 @@
                             </tr>
                         </tfoot>
                         <tbody>
-                            {%for row in data["rows"]%}
-                                <tr>
-                                    {%for cell in row%}
-                                        <td>{{cell}}</td>
-                    
-                                    {% endfor %}
-                                    <td style="text-align: center; width: 100px;">
-                                        <button class="btn btn-danger btn-sm table-action-btn delete-user-btn" data-user-id="{{ row[0] }}" onclick="openUserDeleteModal({{ row[0] }})">
-                                            Supprimer
-                                        </button>
-
-                                    
-                                    </td> 
-                                </tr>
-
-                               
-
-                           
-                                    
-                     
-                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
