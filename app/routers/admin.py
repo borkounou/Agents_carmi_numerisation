@@ -689,12 +689,12 @@ async def create_dossier_no_numeriser(request:Request,
         db.refresh(new_dossier)
         return templates.TemplateResponse(
             "create_dossier_manquant.html",
-            {"request": request, "success_message": f"Le dossier manquant de {fullname} a été ajouté avec succès !", "categories": categories}
+            {"request": request, "success_message": f"Le dossier manquant de numero de titre {title_number} a été ajouté avec succès !", "categories": categories}
         )
     except IntegrityError as e:
             db.rollback()
-            if "ix_agents_nni" in str(e.orig) or "ix_agents_title_number" in str(e.orig):
-                error_message = "Un enregistrement avec ce NNI ou ce numéro de titre existe déjà. Merci de vérifier les informations et de réessayer."
+            if "ix_dossiers_non_numerise_title_number" in str(e.orig):
+                error_message = "Un enregistrement avec ce numéro de titre existe déjà dans la table des dossiers manquants. Veuillez vérifier les informations et réessayer."
             else:
                 error_message = "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
  
@@ -757,8 +757,8 @@ async def create_dossier_perdu(request:Request,
         )
     except IntegrityError as e:
             db.rollback()
-            if "ix_agents_nni" in str(e.orig) or "ix_agents_title_number" in str(e.orig):
-                error_message = "Un enregistrement avec ce NNI ou ce numéro de titre existe déjà. Merci de vérifier les informations et de réessayer."
+            if "ix_dossier_perdu_title_number" in str(e.orig):
+                error_message = "Un enregistrement avec ce numéro de titre existe déjà dans la table des dossiers égarés. Veuillez vérifier les informations et réessayer."
             else:
                 error_message = "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
  
@@ -872,7 +872,7 @@ async def create_agent(request:Request,
             return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories})
         form_data = await request.form()
         error_message = None
-        file_path = f"{UPLOAD_DIR}/{document.filename}"#Path(UPLOAD_DIR) /document.filename
+        file_path = f"{UPLOAD_DIR}/{document.filename}"
         with open(file_path, 'wb') as file:
             content = await document.read()
             file.write(content)
@@ -901,8 +901,17 @@ async def create_agent(request:Request,
                 profile_path =str(profile_image_path) 
                 )
         db.add(new_agent)
+
+        log_entry = models.ActivityLog(
+            user_id = admin_user.id,
+            action = "Ajout de l'agent",
+            details = f"{admin_user.username} a ajouté le dossier d'agent de: numéro de titre: {title_number},  nom complet: {fullname}, catégorie: {category}"
+        )
+        db.add(log_entry)
         db.commit()
         db.refresh(new_agent)
+
+
         return templates.TemplateResponse(
             "create_agent.html",
             {"request": request, "success_message": f"Vous avez créer avec succés l'agent de NNI: {nni}!", "categories":categories}
@@ -1169,7 +1178,7 @@ async def edit_agent(
         log_entry = models.ActivityLog(
             user_id = admin_user.id,
             action = "Modifier l'agent",
-            details = f"Modification de l'agent avec le numéro NNI: {nni}, le nom complet: {fullname}, la catégorie: {category}, la date de naissance: {date_of_birth}, le lieu de naissance: {birth_place}, le téléphone: {telephone}, l'adresse: {address}"
+            details = f"{admin_user.username} a modifié le dossier d'agent: numéro de titre: {title_number},  nom complet: {fullname}, catégorie: {category}, date de naissance: {date_of_birth}, lieu de naissance: {birth_place}, téléphone: {telephone}, l'adresse: {address}"
         )
         db.add(log_entry)
 
@@ -1254,6 +1263,14 @@ async def edit_perdu(
         dossier = db.query(models.DossierPerdu).filter(models.DossierPerdu.id == perdu_id).first()
         if not dossier:
             raise HTTPException(status_code=404, detail="Agent inexistant.")
+        
+
+        log_entry = models.ActivityLog(
+            user_id = admin_user.id,
+            action = "Modifier l'agent",
+            details = f"{admin_user.username} a modifié le dossier perdu: numéro titre: {title_number},  nom complet: {fullname}, catégorie: {category}"
+        )
+        db.add(log_entry)
 
         # Update agent details
         dossier.title_number = title_number
