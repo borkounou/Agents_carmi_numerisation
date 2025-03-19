@@ -29,7 +29,7 @@ async function fetchChartData() {
         labels: labels,
         datasets: [{
           label: "Count",
-          backgroundColor: ["rgba(2,117,216,1)", "rgba(92,184,92,1)", "rgba(240,173,78,1)"],
+          backgroundColor: labels.map(() => getRandomColor()), 
           borderColor: "rgba(2,117,216,1)",
           data: data,
         }],
@@ -54,5 +54,15 @@ async function fetchChartData() {
 
 // Call the function on page load
 fetchChartData();
+
+
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
 
 
