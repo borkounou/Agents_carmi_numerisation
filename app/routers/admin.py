@@ -771,10 +771,6 @@ async def create_dossier_perdu(request:Request,
 
 
 
-
-
-#================================================================
-
 @router.post('/admin/create-user', status_code=status.HTTP_201_CREATED, response_model=List[schemas.UserResponse])
 async def create_user(request:Request,
                 first_name:str = Form(...),
@@ -832,88 +828,6 @@ async def create_user(request:Request,
        
        
     
-
-    
-# @router.post('/admin/create-agent', status_code=status.HTTP_201_CREATED)
-# async def create_agent(
-#     request: Request,
-#     nni: int = Form(...),
-#     title_number: str = Form(...),
-#     fullname: str = Form(...),
-#     category: str = Form(...),
-#     date_of_birth: datetime.date = Form(...),
-#     birth_place: str = Form(...),
-#     telephone: str = Form(...),
-#     address: str = Form(...),
-#     document: UploadFile = File(...),
-#     profile: Optional[UploadFile] = File(None),
-#     db: Session = Depends(get_db),
-#     auth: str = Depends(verify_session)
-# ):
-#     try:
-#         admin_user = db.query(models.User).filter(models.User.email == auth).first()
-
-#         if not admin_user:
-#             return templates.TemplateResponse("create_agent.html", {"request": request, "error_message": "Accès interdit : Réservé aux administrateurs uniquement."})
-
-#         # Check for duplicate title_number
-#         dossier_no_numeriser = db.query(models.DossierNoNumeriser).filter(models.DossierNoNumeriser.title_number == title_number).first()
-#         dossier_perdu = db.query(models.DossierPerdu).filter(models.DossierPerdu.title_number == title_number).first()
-
-#         if dossier_no_numeriser:
-#             return templates.TemplateResponse("create_agent.html", {"request": request, "error_message": f"L'agent avec Numéro de titre {title_number} existe déjà dans Dossier non numerisé."})
-        
-#         if dossier_perdu:
-#             return templates.TemplateResponse("create_agent.html", {"request": request, "error_message": f"L'agent avec Numéro de titre {title_number} existe déjà dans Dossier égaré ou perdu."})
-
-#         # Save uploaded files
-#         file_path = f"{UPLOAD_DIR}/{document.filename}"
-#         with open(file_path, 'wb') as file:
-#             content = await document.read()
-#             file.write(content)
-
-#         profile_image_path = f"{UPLOAD_PROFILE}/profile_default.png"
-#         if profile and profile.filename:
-#             profile_image_path = f"{UPLOAD_PROFILE}/{profile.filename}"
-#             with open(profile_image_path, 'wb') as f:
-#                 content = await profile.read()
-#                 f.write(content)
-
-#         # Create new agent
-#         new_agent = models.Agent(
-#             nni=nni,
-#             title_number=title_number,
-#             fullname=fullname,
-#             category=category,
-#             date_of_birth=date_of_birth,
-#             birth_place=birth_place,
-#             telephone=telephone,
-#             address=address,
-#             document_path=str(file_path),
-#             profile_path=str(profile_image_path)
-#         )
-#         db.add(new_agent)
-
-#         # Log the activity
-#         log_entry = models.ActivityLog(
-#             user_id=admin_user.id,
-#             action="Ajout de l'agent",
-#             details=f"{admin_user.username} a ajouté le dossier d'agent de: numéro de titre: {title_number}, nom complet: {fullname}, catégorie: {category}"
-#         )
-#         db.add(log_entry)
-#         db.commit()
-#         db.refresh(new_agent)
-
-#         return templates.TemplateResponse("create_agent.html", {"request": request, "success_message": f"Vous avez créé avec succès l'agent de NNI: {nni}!"})
-
-#     except IntegrityError as e:
-#         db.rollback()
-#         if "ix_agents_nni" in str(e.orig) or "ix_agents_title_number" in str(e.orig):
-#             return templates.TemplateResponse("create_agent.html", {"request": request, "error_message": "Un enregistrement avec ce NNI ou ce Numéro de titre existe déjà. Veuillez vérifier les données et réessayer."})
-#         else:
-#             return templates.TemplateResponse("create_agent.html", {"request": request, "error_message": "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."})
-
-
 @router.post('/admin/create-agent', status_code=status.HTTP_201_CREATED)
 async def create_agent(request:Request,
                  nni:int=Form(...),
@@ -941,13 +855,15 @@ async def create_agent(request:Request,
         categories= [category[0] for category in categories]
         dossier_no_numeriser= db.query(models.DossierNoNumeriser).filter(models.DossierNoNumeriser.title_number==title_number).first()
         dossier_perdu = db.query(models.DossierPerdu).filter(models.DossierPerdu.title_number==title_number).first()
+        message = f"Vous avez créer avec succés l'agent de NNI: {nni}!"
+        responses = templates.TemplateResponse("create_agent.html",{"request": request, "success_message": message, "categories":categories})
         if dossier_no_numeriser:
             error_message = f"L'agent avec Numéro de titre {title_number} existe déjà dans Dossier non numerisé."
-            return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories}),
+            responses =  templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories}),
         
         if dossier_perdu:
             error_message = f"L'agent avec Numéro de titre {title_number} existe déjà dans Dossier égaré ou perdu."
-            return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories})
+            responses =  templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories})
         form_data = await request.form()
         error_message = None
         file_path = f"{UPLOAD_DIR}/{document.filename}"
@@ -980,20 +896,15 @@ async def create_agent(request:Request,
                 )
         db.add(new_agent)
 
-        # log_entry = models.ActivityLog(
-        #     user_id = admin_user.id,
-        #     action = "Ajout de l'agent",
-        #     details = f"{admin_user.username} a ajouté le dossier d'agent de: numéro de titre: {title_number},  nom complet: {fullname}, catégorie: {category}"
-        # )
-        # db.add(log_entry)
+        log_entry = models.ActivityLog(
+            user_id = admin_user.id,
+            action = "Ajout de l'agent",
+            details = f"{admin_user.username} a ajouté le dossier d'agent de: numéro de titre: {title_number},  nom complet: {fullname}, catégorie: {category}"
+        )
+        db.add(log_entry)
         db.commit()
         db.refresh(new_agent)
-
-
-        return templates.TemplateResponse(
-            "create_agent.html",
-            {"request": request, "success_message": f"Vous avez créer avec succés l'agent de NNI: {nni}!", "categories":categories}
-        )
+        return responses
     
     except IntegrityError as e:
             db.rollback()
@@ -1295,9 +1206,6 @@ async def edit_agent(
             detail=f"Nous ne pouvons pas modifier cet agent. Contacter l'administrateur. {str(e)}"
         )
     
-
-
-
 
 
 
