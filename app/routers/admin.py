@@ -1194,9 +1194,7 @@ def get_activity_logs(request:Request,db: Session = Depends(get_db), auth: str =
             {"request": request, "data":table_data}
         )
 
-
-
-#================================================================
+# Edit perdu section:
 @router.put("/admin/edit-perdu/{perdu_id}")
 async def edit_perdu(
     request: Request,
