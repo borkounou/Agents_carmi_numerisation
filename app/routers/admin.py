@@ -104,8 +104,6 @@ def index(request:Request,
             raise HTTPException(status_code=401, detail="User not found")
         
         role = user.role
-        # offset = (page-1)*page_size
-
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             query = db.query(
                 models.Agent.id,
@@ -188,7 +186,6 @@ def index(request:Request,
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Quelque chose ne va pas! Ressayer encore!! ou {str(e)}")
-
 
 
 
@@ -517,14 +514,7 @@ async def get_dossier_perdu(request:Request,
                     
                                             "columns": ["ID", "NUMERO DE TITRE",  "NOM COMPLET", "CATEGORIE","DOSSIER NUMERO"]
                                             })
-    # data = {
-    #     "columns": ["ID", "NUMERO DE TITRE", "Fullname", "Categorie","Dossier Numero"],  # Adjust based on your User model
-    #     "rows": [[dossier.id, dossier.title_number ,dossier.fullname, dossier.category, dossier.folder] for dossier in dossiers]
-    # }
-
-    # return templates.TemplateResponse("dossier_perdu.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
-
-
+   
 
 @router.get("/admin/list-dossieregares", response_class=HTMLResponse)
 def egares_details(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
@@ -539,7 +529,6 @@ def egares_details(request: Request, db:Session = Depends(get_db),auth:str=Depen
     }
 
     return templates.TemplateResponse("egares_details.html", {"request": request, "body_class": "bg-light","data":data,"role":admin_user.role,"username":admin_user.username})
-
 
 
 
@@ -559,15 +548,6 @@ def get_dossier_manquant(request: Request, db:Session = Depends(get_db),auth:str
 
 
 #================================================================
-
-
-
-
-
-
-
-
-
 
 
 @router.get("/admin/agents-details", response_class=HTMLResponse)
@@ -616,7 +596,6 @@ def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),a
     categories = db.query(models.Category.name).all()
     categories= [category[0] for category in categories]
     return templates.TemplateResponse("create_dossier_manquant.html", {"request": request, "body_class": "bg-light", "categories": categories})
-
 
 
 
@@ -704,7 +683,6 @@ async def create_dossier_no_numeriser(request:Request,
         )
 
 
-
 #================================================================
 @router.get("/admin/create-dossier-perdu", response_class=HTMLResponse)
 def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
@@ -719,10 +697,6 @@ def create_dossier_no_numeriser(request: Request, db:Session = Depends(get_db),a
 
 #================================================================
 
-
-
-
-#================================================================
 
 @router.post('/admin/create-dossier-perdu',status_code=status.HTTP_201_CREATED, response_model=List[schemas.DossierPerduResponse])
 async def create_dossier_perdu(request:Request, 
@@ -766,8 +740,6 @@ async def create_dossier_perdu(request:Request,
             "create_dossier_perdu.html",
             {"request": request, "error_message": error_message, "form_data": form_data, "categories": categories}
         )
-
-
 
 
 
@@ -826,7 +798,6 @@ async def create_user(request:Request,
             {"request": request, "error_message": error_message, "form_data": form_data}
         )
        
-       
     
 @router.post('/admin/create-agent', status_code=status.HTTP_201_CREATED)
 async def create_agent(request:Request,
@@ -856,14 +827,14 @@ async def create_agent(request:Request,
         dossier_no_numeriser= db.query(models.DossierNoNumeriser).filter(models.DossierNoNumeriser.title_number==title_number).first()
         dossier_perdu = db.query(models.DossierPerdu).filter(models.DossierPerdu.title_number==title_number).first()
         message = f"Vous avez créer avec succés l'agent de NNI: {nni}!"
-        responses = templates.TemplateResponse("create_agent.html",{"request": request, "success_message": message, "categories":categories})
+        
         if dossier_no_numeriser:
             error_message = f"L'agent avec Numéro de titre {title_number} existe déjà dans Dossier non numerisé."
-            responses =  templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories}),
+            return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories})
         
         if dossier_perdu:
             error_message = f"L'agent avec Numéro de titre {title_number} existe déjà dans Dossier égaré ou perdu."
-            responses =  templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories})
+            return templates.TemplateResponse("create_agent.html",  {"request":request,"error_message":error_message, "categories":categories})
         form_data = await request.form()
         error_message = None
         file_path = f"{UPLOAD_DIR}/{document.filename}"
@@ -904,7 +875,7 @@ async def create_agent(request:Request,
         db.add(log_entry)
         db.commit()
         db.refresh(new_agent)
-        return responses
+        return templates.TemplateResponse("create_agent.html",{"request": request, "success_message": message, "categories":categories})
     
     except IntegrityError as e:
             db.rollback()
@@ -913,10 +884,7 @@ async def create_agent(request:Request,
             else:
                 error_message = "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
  
-    return templates.TemplateResponse(
-            "create_agent.html",
-            {"request": request, "error_message": error_message, "form_data": form_data, "categories":categories}
-        )
+    return templates.TemplateResponse("create_agent.html",{"request": request, "error_message": error_message, "form_data": form_data, "categories":categories})
         
    
 
