@@ -82,6 +82,8 @@ class DossierNoNumeriser(DossierNoNumeriserCreate):
     id: int
     class Config:
         from_attributes = True
+
+        
 class AgentBase(BaseModel):
     nni:int
     title_number:str
@@ -150,5 +152,12 @@ class User(UserCreate):
     id: int
     class Config:
         from_attributes = True
+
+
+
+
+
+
+
 
 

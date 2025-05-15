@@ -84,6 +84,26 @@ class Category(Base):
 
 
 
+# class AgentNoControle(Base):
+#     __tablename__ = "agents_no_controle"
+#     id = Column(Integer, primary_key=True, index=True, autoincrement=True, unique=True)
+#     nni = Column(Integer, unique=True, index=True, nullable=True, default=9999999999)
+#     title_number = Column(String, nullable=False, unique=True, index=True)
+#     fullname = Column(String, nullable=False, index=True)
+#     date_of_birth = Column(Date, nullable=False)
+#     birth_place = Column(String, nullable=False)
+#     category = Column(String,nullable=False, index=True)
+#     address = Column(String, default="")
+#     document_path = Column(String, nullable=False)  
+#     profile_path= Column(String, default="profiles/profile_default.png", nullable=True)
+#     telephone = Column(String, default="0000000000", nullable=True)
+#     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'))
+
+
+
+
+
+
 
 
 

@@ -14,10 +14,43 @@
 
             <!-- Agents Table -->
             <div class="card mb-4 shadow-lg animate__animated animate__fadeInUp">
-                <div class="card-header bg-primary text-white">
-                    <i class="fas fa-table me-1"></i>
-                    Table des agents
+                <div class="card-header text-white">
+                    <!-- <i class="fas fa-table me-1"></i> -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <label class="input-group-text" for="categoryFilterDropdown">
+                                    <i class="fas fa-filter me-2"></i>Filtrer par catégorie
+                                </label>
+                                <select class="form-select" id="categoryFilterDropdown">
+                                    <option value="all">Toutes les catégories</option>
+                                    {% for category in category_list %}
+                                        <option value="{{ category }}">{{ category }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-3">
+                            <div class="btn-group">
+                                <button class="btn btn-success" id="exportExcelBtn">
+                                    <i class="fas fa-file-excel me-2"></i>Excel
+                                </button>
+                                <button class="btn btn-secondary" id="exportTxtBtn">
+                                    <i class="fas fa-file-alt me-2"></i>TXT
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-end">
+                        <a class="btn btn-success btn-sm table-action-btn" href="{{ https_url_for(request,'register_agent') }}">
+                            <i class="fas fa-plus me-1"></i>Ajouter un agent
+                        </a>
+                    </div>
                 </div>
+
                 <div class="card-body">
                     <table id="mainAgentTable" class="table table-hover">
                         <thead>

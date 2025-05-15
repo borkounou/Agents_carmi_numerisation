@@ -15,10 +15,12 @@ import models.models as models
 import schemas.schemas as schemas
 import datetime
 from sqlalchemy.sql import text 
+from sqlalchemy import or_
 from fastapi import APIRouter
 from config.connection import get_db
 from config.config import https_url_for
 from config.config import pwd_context, hash_password
+import json
 from config.config import verify_session, create_session_token
 
 
@@ -95,6 +97,9 @@ def index(request:Request,
           start: Optional[int] = Query(0),  # DataTables parameter (offset)
           length: Optional[int] = Query(10),  # DataTables parameter (page size)
           search_value: Optional[str] = Query(None),  
+          category_filter: Optional[str] = Query(None),
+          column_filter: Optional[str] = Query(None),
+          column_value: Optional[str] = Query(None)
           ):
     try:
 
@@ -119,15 +124,16 @@ def index(request:Request,
 
             if search_value:
                     query = query.filter(
-                    models.Agent.title_number.contains(search_value) |
-                    # models.Agent.nni.contains(search_value) |
-                    models.Agent.fullname.contains(search_value) |
-                    cast(models.Agent.nni, String).contains(search_value) |
-                    # models.Agent.date_of_birth.contains(search_value) |
-                    models.Agent.birth_place.contains(search_value) |
-                    models.Agent.category.contains(search_value) |
-                    models.Agent.telephone.contains(search_value)
+                    models.Agent.title_number.ilike(f"%{search_value}%") |
+                    models.Agent.fullname.ilike(f"%{search_value}%") |
+                    cast(models.Agent.nni, String).ilike(f"%{search_value}%") |
+                    models.Agent.birth_place.ilike(f"%{search_value}%") |
+                    models.Agent.category.ilike(f"%{search_value}%") |
+                    models.Agent.telephone.ilike(f"%{search_value}%") 
                 )
+                    
+            if category_filter and category_filter !="all":
+                query = query.filter(models.Agent.category == category_filter)
                     
 
             total_records = query.count()
@@ -156,6 +162,10 @@ def index(request:Request,
         })
 
 
+
+        unique_category = db.query(models.Agent.category).distinct().all()
+        category_list = [agent[0] for agent in unique_category] if unique_category else []
+
         # Single COUNT query
         counts = db.execute(text("""
             SELECT 
@@ -178,7 +188,9 @@ def index(request:Request,
                                             "total_perdu":total_perdu, "all_total":all_total, 
                                             "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", 
                                                         "DATE DE NAISSANCE", "LIEU DE NAISSANCE", 
-                                                        "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"]
+                                                        "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"],
+
+                                            "category_list": category_list
                                             })
     except SQLAlchemyError as e:
     
@@ -198,6 +210,9 @@ async def agents_table(request:Request,
           start: Optional[int] = Query(0),  # DataTables parameter (offset)
           length: Optional[int] = Query(10),  # DataTables parameter (page size)
           search_value: Optional[str] = Query(None),  
+          category_filter: Optional[str] = Query(None),
+          column_filter: Optional[str] = Query(None),
+          column_value: Optional[str] = Query(None)
 ):
     
 
@@ -224,16 +239,40 @@ async def agents_table(request:Request,
 
             if search_value:
                     query = query.filter(
-                    models.Agent.title_number.contains(search_value) |
+                    models.Agent.title_number.ilike(f"%{search_value}%") |
                     # models.Agent.nni.contains(search_value) |
-                    models.Agent.fullname.contains(search_value) |
-                    cast(models.Agent.nni, String).contains(search_value) |
+                    models.Agent.fullname.ilike(f"%{search_value}%") |
+                    cast(models.Agent.nni, String).ilike(f"%{search_value}%") |
                     # models.Agent.date_of_birth.contains(search_value) |
-                    models.Agent.birth_place.contains(search_value) |
-                    models.Agent.category.contains(search_value) |
-                    models.Agent.telephone.contains(search_value)
+                    models.Agent.birth_place.ilike(f"%{search_value}%") |
+                    models.Agent.category.ilike(f"%{search_value}%") |
+                    models.Agent.telephone.ilike(f"%{search_value}%") 
                 )
                     
+
+            if category_filter and category_filter !="all":
+                query = query.filter(models.Agent.category == category_filter)
+
+            
+
+            if column_filter and column_value: 
+                 try:
+
+                    selected_columns = json.loads(column_filter)
+                    if selected_columns:  # If any columns selected
+                        filters = []
+                        for col in selected_columns:
+                            if hasattr(models.Agent, col):
+                                column = getattr(models.Agent, col)
+                                filters.append(column.ilike(f"%{column_value}%"))
+                            
+                        if filters:
+                            query = query.filter(or_(*filters))
+                 except json.JSONDecodeError:
+                        
+                        pass
+                    
+
             total_records = query.count()    
             agents = query.offset(start).limit(length).all()
                 # Single COUNT query
@@ -257,6 +296,10 @@ async def agents_table(request:Request,
                 "data": data
         })
 
+    unique_category = db.query(models.Agent.category).distinct().all()
+    category_list = [agent[0] for agent in unique_category] if unique_category else []
+
+    
     return templates.TemplateResponse("agents_table.html",
                                             {"request":request, 
                                             "body_class": "sb-nav-fixed", 
@@ -265,8 +308,14 @@ async def agents_table(request:Request,
                                             "categories": categories,
                                             "columns": ["ID", "NUMERO DE TITRE", "NNI", "NOM COMPLET", 
                                                         "DATE DE NAISSANCE", "LIEU DE NAISSANCE", 
-                                                        "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"]
+                                                        "CATEGORIE", "TELEPHONE", "NOM DE DOCUMENT"],
+
+
+                                            "category_list": category_list
                                             })
+
+
+
 
 @router.get("/admin/users-table", response_class=HTMLResponse)
 async def users_table(request:Request,
@@ -298,10 +347,10 @@ async def users_table(request:Request,
 
             if search_value:
                     query = query.filter(
-                    models.User.first_name.contains(search_value) |
-                    models.User.last_name.contains(search_value) |
-                    models.User.username.contains(search_value)  |
-                    models.User.email.contains(search_value) 
+                    models.User.first_name.ilike(f"%{search_value}%") |
+                    models.User.last_name.ilike(f"%{search_value}%") |
+                    models.User.username.ilike(f"%{search_value}%") |
+                    models.User.email.ilike(f"%{search_value}%")  
                 )
                     
             total_records = query.count()    
@@ -364,9 +413,9 @@ def get_dossier_no_numeriser(request:Request,
 
             if search_value:
                     query = query.filter(
-                    models.DossierNoNumeriser.title_number.contains(search_value) |
-                    models.DossierNoNumeriser.fullname.contains(search_value) |
-                    models.DossierNoNumeriser.category.contains(search_value) 
+                    models.DossierNoNumeriser.title_number.ilike(f"%{search_value}%") |
+                    models.DossierNoNumeriser.fullname.ilike(f"%{search_value}%") |
+                    models.DossierNoNumeriser.category.ilike(f"%{search_value}%")
                 )
                     
             total_records = query.count()    
@@ -422,9 +471,9 @@ def manquants_details(request:Request,
 
             if search_value:
                     query = query.filter(
-                    models.DossierNoNumeriser.title_number.contains(search_value) |
-                    models.DossierNoNumeriser.fullname.contains(search_value) |
-                    models.DossierNoNumeriser.category.contains(search_value) 
+                    models.DossierNoNumeriser.title_number.ilike(f"%{search_value}%") |
+                    models.DossierNoNumeriser.fullname.ilike(f"%{search_value}%") |
+                    models.DossierNoNumeriser.category.ilike(f"%{search_value}%") 
                 )
                     
             total_records = query.count()    
@@ -481,10 +530,10 @@ async def get_dossier_perdu(request:Request,
 
             if search_value:
                     query = query.filter(
-                    models.DossierPerdu.title_number.contains(search_value) |
-                    models.DossierPerdu.fullname.contains(search_value) |
-                    models.DossierPerdu.category.contains(search_value) |
-                    models.DossierPerdu.folder.contains(search_value)
+                    models.DossierPerdu.title_number.ilike(f"%{search_value}%") |
+                    models.DossierPerdu.fullname.ilike(f"%{search_value}%") |
+                    models.DossierPerdu.category.ilike(f"%{search_value}%") |
+                    models.DossierPerdu.folder.ilike(f"%{search_value}%")
                 )
                     
             total_records = query.count()    
