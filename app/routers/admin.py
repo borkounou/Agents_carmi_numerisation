@@ -62,10 +62,8 @@ def login_user(request: Request, email:str=Form(...), password:str=Form(...), db
     log_entry = models.ActivityLog(
         user_id=user.id,
         action="LOGIN",
-        details=f"User logged in from IP {request.client.host}"
-        # ip=request.client.host,
-        # user_agent=request.headers.get("user-agent"),
-        # timestamp=datetime.datetime.now(),
+        details=f"L'utilisateur {user.first_name} {user.last_name} avec l'adresse IP: {request.client.host} est connecté"
+
     )
     db.add(log_entry)
     db.commit()
@@ -989,20 +987,45 @@ async def delete_manquant(request:Request,agent_id: int, db: Session = Depends(g
 
 #============================================================================
 
-
 @router.delete("/admin/delete-user/{user_id}", status_code=status.HTTP_200_OK)
-def delete_user(request:Request, user_id:int, db:Session = Depends(get_db),auth:str=Depends(verify_session)):
-
+def delete_user(
+    request: Request, 
+    user_id: int, 
+    db: Session = Depends(get_db),
+    auth: str = Depends(verify_session)
+):
+    # Verify admin privileges
     admin_user = db.query(models.User).filter(models.User.email == auth).first()
-    # Check if the user exists and if their role is 'admin'
     if not admin_user or admin_user.role != 'admin':
-        raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
-    user = db.query(models.User).filter(models.User.id==user_id).first()
+        raise HTTPException(
+            status_code=403, 
+            detail="Accès interdit : Réservé aux administrateurs uniquement."
+        )
+
+    # Get the user to delete
+    user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
-    db.delete(user)
-    db.commit()
-    return {"detail": f"Suppression de l'utilisateur avec succés."}
+        raise HTTPException(
+            status_code=404, 
+            detail="Utilisateur introuvable"
+        )
+
+    try:
+        # First, delete all related activity logs
+        db.query(models.ActivityLog).filter(models.ActivityLog.user_id == user_id).delete()
+        
+        # Then delete the user
+        db.delete(user)
+        db.commit()
+        
+        return {"detail": f"Suppression de l'utilisateur avec succès."}
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erreur lors de la suppression: {str(e)}"
+        )
 
 
 
