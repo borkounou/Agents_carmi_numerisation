@@ -4,132 +4,120 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
 
-    <title>{% block head_title %}{% endblock %}</title>
+    <title>{% block head_title %}Tableau de bord{% endblock %}</title>
 
-      <!-- Scripts -->
     <!-- Favicon -->
-    <link rel="shortcut icon" href="../static/assets/img/favicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css" />
-    <link rel="stylesheet" type="text/css" href="{{ https_url_for(request,'static', path='css/styles.css') }}" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-     <!-- Google Fonts -->
-     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="shortcut icon" href="/static/assets/img/favicon.ico" type="image/x-icon" />
+
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="{{ https_url_for(request,'static', path='css/styles.css') }}" />
+
     {% block extra_css %}{% endblock %}
-    {% block extra_js %}{% endblock %}
 </head>
 
 <body class="{{ body_class|default('sb-nav-fixed') }}">
 
     <!-- Navbar -->
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark shadow-sm">
-        <!-- Navbar Brand -->
-        <a class="navbar-brand ps-3 animate__animated animate__fadeInLeft" href="{{ https_url_for(request,'index') }}">
-            <img class="logoCarmi" src="/static/assets/img/carmiLogo.jpeg" alt="Logo" style="width: 100px; height: 50px;">
+        <a class="navbar-brand ps-3 animate__animated animate__fadeInLeft d-flex align-items-center gap-2" href="{{ https_url_for(request,'index') }}">
+            <img src="/static/assets/img/carmiLogo.jpeg" alt="Logo" style="width: 100px; height: 50px;">
+            <span class="fw-bold text-white">CARMI</span>
         </a>
 
-        <!-- Sidebar Toggle -->
-        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!">
-            <i class="fas fa-bars"></i>
-        </button>
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4" id="sidebarToggle"><i class="fas fa-bars"></i></button>
 
-        <!-- Navbar Search -->
-        <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
+        <form class="d-none d-md-inline-block ms-auto me-3">
             <div class="input-group">
-                <input class="form-control" type="text" placeholder="Rechercher pour ..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                <button class="btn btn-primary" id="btnNavbarSearch" type="button">
-                    <i class="fas fa-search"></i>
-                </button>
+                <input class="form-control" type="text" placeholder="Rechercher..." />
+                <button class="btn btn-primary"><i class="fas fa-search"></i></button>
             </div>
         </form>
 
-        <!-- Navbar User Dropdown -->
-        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+        <ul class="navbar-nav me-4">
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle animate__animated animate__fadeInRight" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <a class="nav-link dropdown-toggle animate__animated animate__fadeInRight" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                     <i class="fas fa-user fa-fw"></i>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="#!">Settings</a></li>
-                    <li><a class="dropdown-item" href="{{ https_url_for(request,'get_activity_logs') }}">
-                        Activity Logs
-                    </a></li>
-                    <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item text-danger" href="{{ https_url_for(request,'logout') }}">Logout</a></li>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="#!">Paramètres</a></li>
+                    <li><a class="dropdown-item" href="{{ https_url_for(request,'get_activity_logs') }}">Historique</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="{{ https_url_for(request,'logout') }}">Déconnexion</a></li>
                 </ul>
             </li>
         </ul>
     </nav>
 
-    <!-- Sidebar -->
+    <!-- Sidebar and Main -->
     <div id="layoutSidenav">
+        <!-- Sidebar -->
         <div id="layoutSidenav_nav">
-            <nav class="sb-sidenav accordion sb-sidenav-dark shadow-lg" id="sidenavAccordion">
+            <nav class="sb-sidenav accordion sb-sidenav-dark shadow-sm" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
                         <div class="sb-sidenav-menu-heading">Interface</div>
-                        <a class="nav-link animate__animated animate__fadeInLeft" href="{{ https_url_for(request,'index') }}">
+                        <a class="nav-link animate__fadeInLeft" href="{{ https_url_for(request,'index') }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                            Tableau De Bord
+                            Tableau de bord
                         </a>
 
                         <div class="sb-sidenav-menu-heading">Dossiers</div>
-                        <a class="nav-link collapsed animate__animated animate__fadeInLeft" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts">
                             <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
                             Agents Carmi
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
-                        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                        <div class="collapse" id="collapseLayouts">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="{{ https_url_for(request,'agents_table') }}">Dossiers Numerisés</a>
+                                <a class="nav-link" href="{{ https_url_for(request,'agents_table') }}">Dossiers numérisés</a>
                                 <a class="nav-link" href="{{ https_url_for(request,'register_agent') }}">Ajouter un agent</a>
                             </nav>
                         </div>
 
-                        <a class="nav-link collapsed animate__animated animate__fadeInLeft" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages">
                             <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-                            Dossiers et anomalies
+                            Dossiers & anomalies
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
-                        <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
-                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                        <div class="collapse" id="collapsePages">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth">
                                     Dossiers
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                                 </a>
-                                <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                                <div class="collapse" id="pagesCollapseAuth">
                                     <nav class="sb-sidenav-menu-nested nav">
-                                        <a class="nav-link" href="{{ https_url_for(request,'get_dossier_no_numeriser') }}">Liste de dossiers manquants</a>
-                                        <a class="nav-link" href="{{ https_url_for(request,'get_dossier_perdu') }}">Liste de dossiers egarés</a>
-                                        <a class="nav-link" href="{{ https_url_for(request,'create_dossier_no_numeriser') }}">Ajouter dossier manquant</a>
-                                        <a class="nav-link" href="{{ https_url_for(request,'create_dossier_perdu') }}">Ajouter dossier égaré</a>
-                                        <a class="nav-link" href="{{ https_url_for(request,'create_category') }}">Ajouter une categorie</a>
+                                        <a class="nav-link" href="{{ https_url_for(request,'get_dossier_no_numeriser') }}">Manquants</a>
+                                        <a class="nav-link" href="{{ https_url_for(request,'get_dossier_perdu') }}">Égarés</a>
+                                        <a class="nav-link" href="{{ https_url_for(request,'create_dossier_no_numeriser') }}">Ajouter manquant</a>
+                                        <a class="nav-link" href="{{ https_url_for(request,'create_dossier_perdu') }}">Ajouter égaré</a>
+                                        <a class="nav-link" href="{{ https_url_for(request,'create_category') }}">Ajouter une catégorie</a>
                                     </nav>
                                 </div>
-
                             </nav>
                         </div>
 
                         <div class="sb-sidenav-menu-heading">Autres</div>
-                        <a class="nav-link animate__animated animate__fadeInLeft" href="{{ https_url_for(request,'charts') }}">
+                        <a class="nav-link" href="{{ https_url_for(request,'charts') }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                             Actualités
                         </a>
-                        <a class="nav-link animate__animated animate__fadeInLeft" href="{{ https_url_for(request,'users_table') }}" {% if role!='admin' %} style="display:none;" {% endif %}>
-                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                        <a class="nav-link" href="{{ https_url_for(request,'users_table') }}" {% if role != 'admin' %}style="display:none;"{% endif %}>
+                            <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
                             Utilisateurs
                         </a>
                     </div>
                 </div>
-
-                <!-- Sidebar Footer -->
-                <div class="sb-sidenav-footer bg-dark">
-                    <div class="small">Connecté: {{ username }}</div>
+                <div class="sb-sidenav-footer bg-dark text-light small">
+                    Connecté: {{ username }}
                 </div>
             </nav>
         </div>
@@ -140,13 +128,15 @@
         </div>
     </div>
 
-  
-    <!-- <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script> -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{{ https_url_for(request,'static', path='js/scripts.js') }}"></script>
     <script src="{{ https_url_for(request,'static', path='js/datatables-simple-demo.js') }}"></script>
     <script src="{{ https_url_for(request,'static', path='js/agents_table.js') }}"></script>
     <script src="{{ https_url_for(request,'static', path='js/users_table.js') }}"></script>
@@ -154,7 +144,6 @@
     <script src="{{ https_url_for(request,'static', path='js/dossier_manquant.js') }}"></script>
     <script src="{{ https_url_for(request,'static', path='assets/demo/chart-area-demo.js') }}"></script>
     <script src="{{ https_url_for(request,'static', path='assets/demo/chart-bar-demo.js') }}"></script>
-    <script src="{{ https_url_for(request,'static', path='js/scripts.js') }}"></script>
 
     {% block custom_js %}{% endblock %}
 </body>
