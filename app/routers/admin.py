@@ -284,7 +284,8 @@ async def agents_table(request:Request,
                 "birth_place": agent.birth_place,
                 "category": agent.category,
                 "telephone": agent.telephone,
-                "document_path": agent.document_path
+                "document_path": agent.document_path,
+                "current_user_role": role
             } for agent in agents]
 
             return JSONResponse({
@@ -1146,8 +1147,8 @@ async def agent_details(request:Request,agent_id: int, db: Session = Depends(get
         admin_user = db.query(models.User).filter(models.User.email == auth).first()
         agent = db.query(models.Agent).filter(models.Agent.id == agent_id).first()
         
-        if not admin_user or admin_user.role != 'admin':
-            raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
+        # if not admin_user or admin_user.role != 'admin':
+        #     raise HTTPException(status_code=403, detail="Accès interdit : Réservé aux administrateurs uniquement.")
 
         if not agent:
             raise HTTPException(status_code=404, detail="Cet agent n'existe pas dans la base de données.")

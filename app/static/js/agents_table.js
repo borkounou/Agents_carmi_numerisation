@@ -30,17 +30,22 @@ $(document).ready(function () {
             {
                 data: null,
                 render: function (data, type, row) {
+
+                    // Only show edit/delete buttons for admin roles
+                    const isAdmin = ['admin', 'superadmin'].includes(row.current_user_role.toLowerCase());
                     return `
                         <div class="d-flex flex-wrap gap-2 justify-content-center">
                             <button class="btn btn-primary btn-sm table-action-btn" data-user-id="${row.id}" onclick="navigateToAgentDetails(${row.id})">
                                 <i class="fas fa-info-circle me-1"></i>Visualiser
                             </button>
+                            ${isAdmin ? `
                             <button class="btn btn-primary btn-sm table-action-btn" data-user-id="${row.id}" onclick="openEditModal(${row.id})">
                                 <i class="fas fa-edit me-1"></i>Modifier
                             </button>
                             <button class="btn btn-danger btn-sm table-action-btn delete-user-btn" data-user-id="${row.id}" onclick="openDeleteModal(${row.id})">
                                 <i class="fas fa-trash me-1"></i>Supprimer
                             </button>
+                            ` : ''}
                         </div>
                     `;
                 }
